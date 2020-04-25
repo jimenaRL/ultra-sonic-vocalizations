@@ -1,5 +1,6 @@
 import os
 import shutil
+import warnings
 
 from tqdm import tqdm
 
@@ -10,19 +11,17 @@ import tensorflow as tf
 import librosa
 
 from conf import (
-    DATA_PATH,
+    XLSX_FILES,
+    AUDIO_FOLDER,
     COLUMNS,
+    PRECOLUMNS,
+    MISSING_VOCALIZATION_LABEL,
     AUDIOPARAMS,
     STFTPARAMS,
     MELPARAMS,
     MFCCPAMARS,
-    CACHEDIR,
-    EXPERIMENTS
+    CACHEDIR
 )
-
-
-def get_csv_path(experiment):
-    return os.path.join(DATA_PATH, f"{experiment}.csv")
 
 
 def get_recording(experiment):
@@ -30,25 +29,97 @@ def get_recording(experiment):
 
 
 def get_nest_number(experiment):
-    return experiment.split('N')[-1].split('E')[0]
+    return experiment.split('N')[-1][0]
 
 
 def get_postnatalday(experiment):
-    return experiment.split('EP')[-1].split('-')[0]
+    return experiment.split('P')[-1].split('-')[0]
 
 
 def get_audio_path(recording):
-    return os.path.join(DATA_PATH, f"T0000{recording}.WAV")
+    ap = os.path.join(AUDIO_FOLDER, f"T0000{recording}.WAV")
+    if not os.path.exists(ap):
+        w = f"Path to audio file '{ap}' does not exist in system."
+        warnings.warn(w)
+    return ap
 
 
-def create_dataframe(experiment):
-    df = pd.read_csv(
-        get_csv_path(experiment),
+def get_experiment_from_xlsx_path(path):
+    return os.path.split(path)[-1].split(".xlsx")[0]
+
+
+def format_dataframe(experiment, recording, df):
+        # remove columns with empty strings
+        df = df.replace('', np.nan).dropna(axis=1, how='all')
+        # remove rows with NAN values
+        df = df.dropna(axis=0, how='any')
+        # remove recordings with no events
+        lf = df.shape[1]
+        lp = len(PRECOLUMNS)
+        if (lf < lp):
+            w = f"Dropping recording {recording} from experiment {experiment}:"
+            w += f" number of non-empty lines is {lf}, less than {lp}."
+            warnings.warn(w)
+            print(df.head())
+            return None
+        elif (lf > lp):
+            w = f"Dropping last columns of recording {recording} from "
+            w += f"experiment{experiment}: number of non-empty lines is {lf}, "
+            w += f"more than {lp}."
+            warnings.warn(w)
+            print(df.head())
+            df = df.iloc[:, :14]
+        # name columns
+        df.columns = PRECOLUMNS
+        # replace missing vocalization annotations
+        df.vocalization.fillna(MISSING_VOCALIZATION_LABEL, inplace=True)
+        # manually convert comma to points in numeric columns encoded as string
+        # and convert to float in order to prevent later failure
+        if pd.api.types.is_string_dtype(df.dtypes.t0):
+            df = df.assign(
+                t0=pd.to_numeric(df.t0.apply(lambda s: s.replace(',', '.'))))
+        if pd.api.types.is_string_dtype(df.dtypes.t1):
+            df = df.assign(
+                t1=pd.to_numeric(df.t1.apply(lambda s: s.replace(',', '.'))))
+        # add event duration info
+        df = df.assign(
+            recording=recording,
+            experiment=experiment,
+            duration=df['t1']-df['t0'])
+        # add extra info
+        df = df.assign(
+            recording=recording,
+            experiment=experiment)
+        df = df.assign(
+            postnatalday=get_postnatalday(experiment),
+            audio_path=get_audio_path(recording),
+            nest=get_nest_number(experiment))
+        # remove not used columns
+        df = df[list(COLUMNS.keys())]
+        # fix dtypes
+        df = df.astype(COLUMNS)
+
+        return df
+
+
+def create_dataframes(path):
+    dicc = pd.read_excel(
+        path,
+        sheet_name=None,
         header=0,
         na_values=0,
-        keep_default_na=False)[COLUMNS]
-    df = df.assign(experiment=experiment)
-    return df
+        keep_default_na=False)  # [COLUMNS]
+
+    dfs = []
+    for recording, df in dicc.items():
+        df = format_dataframe(
+            experiment=get_experiment_from_xlsx_path(path),
+            recording=recording,
+            df=df)
+        if df is not None:
+            dfs.append(df)
+
+    return dfs
 
 
 def load_audio(path, offset, duration):
@@ -140,17 +211,7 @@ def inverse(tensor):
 def get_dataframe():
 
     df = pd.concat([
-        create_dataframe(e) for e in EXPERIMENTS
-    ]).rename({"sample": "sample_nb"}, axis=1)
-
-    df = df.assign(recording=df.experiment.apply(get_recording))
-    df = df.assign(nest=df.experiment.apply(get_nest_number))
-    df = df.assign(postnatalday=df.experiment.apply(get_postnatalday))
-    df = df.assign(audio_path=df.recording.apply(get_audio_path))
-    df = df.assign(t0=df.t0.apply(lambda f: float(f.replace(',', '.'))))
-    df = df.assign(t1=df.t1.apply(lambda t: float(t.replace(',', '.'))))
-    df = df.assign(
-        duration=df['t1'].astype(np.float)-df['t0'].astype(np.float))
+        df for file in XLSX_FILES for df in create_dataframes(file)])
 
     # shuffle data frame
     df = df.sample(frac=1)

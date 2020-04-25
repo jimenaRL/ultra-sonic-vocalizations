@@ -1,27 +1,50 @@
 import os
 import librosa
+from glob import glob
+import numpy as np
 
 BASE_PATH = "/home/utilisateur/Desktop/palomars"
 
 # CACHEDIR = os.path.join(BASE_PATH, "dataset", "features")
 CACHEDIR = os.path.join(BASE_PATH, "dataset", "features-nest")
 
+XLSX_FOLDER = os.path.join(BASE_PATH, 'all_DATA')
+AUDIO_FOLDER = os.path.join(BASE_PATH, 'data')
+PLOTS_PATH = os.path.join(BASE_PATH, 'plots')
+
 # metadata parameters
 # N1EP09--> 494; N1EP04-->482; N2EP01-->637
 # N1= nest numero 1, E= experince; P09=postnatal day 09
 
-EXPERIMENTS = [
-    "N1EP04-482",
-    "N1EP09-494",
-    "N2EP01-637"
+XLSX_FILES = glob(os.path.join(XLSX_FOLDER, "*.xlsx"))
+
+# EXPERIMENTS = [
+#     "N1EP04-482",
+#     "N1EP09-494",
+#     "N2EP01-637"
+# ]
+
+PRECOLUMNS = [
+    "event", "C", "D", "E", "F", "t0", "t1",
+    "I", "J", "K", "L", "M", "N", "vocalization"
 ]
+COLUMNS = {
+    "t0": np.float,
+    "t1": np.float,
+    "duration": np.float,
+    "event": np.int,
+    "nest": np.int,
+    "vocalization": np.int,
+    "postnatalday": np.int,
+    "audio_path": str,
+    "experiment": str,
+    "recording": str,
+}
 
+MISSING_VOCALIZATION_LABEL = 0.0
 
-DATA_PATH = os.path.join(BASE_PATH, 'data')
-PLOTS_PATH = os.path.join(BASE_PATH, 'plots')
-
-COLUMNS = ["sample", "t0", "t1", "vocalization", "file"]
 VOCALIZATIONS = {
+    0: "MISSING",
     1: "audible",
     2: "USV"
 }
