@@ -10,6 +10,7 @@ import tensorflow as tf
 
 import librosa
 
+from preprocessing import get_dataframe
 from conf import (
     XLSX_FILES,
     AUDIO_FOLDER,
@@ -59,7 +60,7 @@ def format_dataframe(experiment, recording, df):
         if (lf < lp):
             w = f"Dropping recording {recording} from experiment {experiment}:"
             w += f" number of non-empty lines is {lf}, less than {lp}."
-            warnings.warn(w)
+            warnings.warn(w, UserWarning)
             print(df.head())
             return None
         elif (lf > lp):
@@ -108,8 +109,7 @@ def create_dataframes(path):
         sheet_name=None,
         header=0,
         na_values=0,
-        keep_default_na=False)  # [COLUMNS]
-
+        keep_default_na=False)
     dfs = []
     for recording, df in dicc.items():
         df = format_dataframe(
