@@ -20,8 +20,10 @@ def get_recording(experiment):
 def get_nest_number(experiment):
     return experiment.split('N')[-1][0]
 
+
 def get_year(experiment):
     return experiment[:2]
+
 
 def get_postnatalday(experiment):
     return experiment.split('P')[-1].split('-')[0]
