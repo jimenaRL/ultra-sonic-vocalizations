@@ -53,14 +53,12 @@ def format_dataframe(experiment, recording, df):
             w = f"Dropping recording {recording} from experiment {experiment}:"
             w += f" number of non-empty lines is {lf}, less than {lp}."
             warnings.warn(w, UserWarning)
-            print(df.head())
             return None
         elif (lf > lp):
             w = f"Dropping last columns of recording {recording} from "
             w += f"experiment{experiment}: number of non-empty lines is {lf}, "
             w += f"more than {lp}."
             warnings.warn(w)
-            print(df.head())
             df = df.iloc[:, :14]
         # name columns
         df.columns = PRECOLUMNS
