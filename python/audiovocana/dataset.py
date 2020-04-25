@@ -10,8 +10,8 @@ import tensorflow as tf
 
 import librosa
 
-from preprocessing import get_dataframe
-from conf import (
+from audiovocana.preprocessing import get_dataframe
+from audiovocana.conf import (
     XLSX_FILES,
     AUDIO_FOLDER,
     COLUMNS,

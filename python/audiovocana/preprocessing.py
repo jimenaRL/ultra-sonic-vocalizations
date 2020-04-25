@@ -4,7 +4,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from conf import (
+from audiovocana.conf import (
     XLSX_FILES,
     AUDIO_FOLDER,
     COLUMNS,
@@ -20,6 +20,8 @@ def get_recording(experiment):
 def get_nest_number(experiment):
     return experiment.split('N')[-1][0]
 
+def get_year(experiment):
+    return experiment[:2]
 
 def get_postnatalday(experiment):
     return experiment.split('P')[-1].split('-')[0]
@@ -82,7 +84,8 @@ def format_dataframe(experiment, recording, df):
         df = df.assign(
             postnatalday=get_postnatalday(experiment),
             audio_path=get_audio_path(recording),
-            nest=get_nest_number(experiment))
+            nest=get_nest_number(experiment),
+            year=get_year(experiment))
         # remove not used columns
         df = df[list(COLUMNS.keys())]
         # fix dtypes
@@ -117,4 +120,10 @@ def get_dataframe():
         df for file in XLSX_FILES for df in create_dataframes(file)])
     # shuffle data frame
     df = df.sample(frac=1)
+
+    m = f"Found {df.shape[0]} events "
+    m += f"from {df.experiment.nunique()} different experiments "
+    m += f"and {df.recording.nunique()} different recordings"
+    print(m)
+
     return df

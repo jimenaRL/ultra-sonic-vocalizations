@@ -3,14 +3,15 @@ import librosa
 from glob import glob
 import numpy as np
 
-BASE_PATH = "/home/utilisateur/Desktop/palomars"
 
-# CACHEDIR = os.path.join(BASE_PATH, "dataset", "features")
-CACHEDIR = os.path.join(BASE_PATH, "dataset", "features-nest")
+BASE_PATH = os.environ["AUDIOVOCANA_BASE_PATH"]
+XLSX_FOLDER = os.environ["AUDIOVOCANA_XLSX_FOLDER"]
+AUDIO_FOLDER = os.environ["AUDIOVOCANA_AUDIO_FOLDER"]
 
-XLSX_FOLDER = os.path.join(BASE_PATH, 'all_DATA')
-AUDIO_FOLDER = os.path.join(BASE_PATH, 'data')
+
+CACHEDIR = os.path.join(BASE_PATH, "dataset", "features-full")
 PLOTS_PATH = os.path.join(BASE_PATH, 'plots')
+
 
 # metadata parameters
 # N1EP09--> 494; N1EP04-->482; N2EP01-->637
@@ -33,9 +34,10 @@ COLUMNS = {
     "t1": np.float,
     "duration": np.float,
     "event": np.int,
-    "nest": np.int,
-    "vocalization": np.int,
     "postnatalday": np.int,
+    "vocalization": str,
+    "nest": str,
+    "year": str,
     "audio_path": str,
     "experiment": str,
     "recording": str,
