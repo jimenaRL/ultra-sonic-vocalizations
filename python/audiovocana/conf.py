@@ -8,22 +8,18 @@ BASE_PATH = os.environ["AUDIOVOCANA_BASE_PATH"]
 XLSX_FOLDER = os.environ["AUDIOVOCANA_XLSX_FOLDER"]
 AUDIO_FOLDER = os.environ["AUDIOVOCANA_AUDIO_FOLDER"]
 
+print("~~~~~~ AUDIOVOCANA PARAMS ~~~~~~")
+print(f"BASE_PATH = {BASE_PATH}")
+print(f"XLSX_FOLDER = {XLSX_FOLDER}")
+print(f"AUDIO_FOLDER = {AUDIO_FOLDER}")
+
 
 CACHEDIR = os.path.join(BASE_PATH, "dataset", "features-full")
 PLOTS_PATH = os.path.join(BASE_PATH, 'plots')
 
 
-# metadata parameters
-# N1EP09--> 494; N1EP04-->482; N2EP01-->637
-# N1= nest numero 1, E= experince; P09=postnatal day 09
-
 XLSX_FILES = glob(os.path.join(XLSX_FOLDER, "*.xlsx"))
 
-# EXPERIMENTS = [
-#     "N1EP04-482",
-#     "N1EP09-494",
-#     "N2EP01-637"
-# ]
 
 PRECOLUMNS = [
     "event", "C", "D", "E", "F", "t0", "t1",
@@ -35,7 +31,7 @@ COLUMNS = {
     "duration": np.float,
     "event": np.int,
     "postnatalday": np.int,
-    "vocalization": str,
+    "vocalization": np.int,
     "nest": str,
     "year": str,
     "audio_path": str,
@@ -43,7 +39,7 @@ COLUMNS = {
     "recording": str,
 }
 
-MISSING_VOCALIZATION_LABEL = 0.0
+MISSING_VOCALIZATION_LABEL = 0
 
 VOCALIZATIONS = {
     0: "MISSING",
@@ -106,6 +102,7 @@ MFCCPAMARS = {
 }
 
 MELFB = librosa.filters.mel(**MELPARAMS)
+
 print(f"mel fiterbank shape = {MELFB.shape}")
 print(
     f"STFT time resolution = {1000 * MELPARAMS['n_fft']/AUDIOPARAMS['sr']} ms")
