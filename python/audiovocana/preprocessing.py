@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 
 from audiovocana.conf import (
-    SEED,
     XLSX_FILES,
     AUDIO_FOLDER,
     COLUMNS,
