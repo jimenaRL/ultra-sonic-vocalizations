@@ -1,0 +1,4 @@
+pandas==1.0.1
+numpy==1.18.2
+tensorflow==2.1.0
+librosa==0.6.2
