@@ -1,15 +1,14 @@
 import os
+from glob import glob
 import warnings
 
 import numpy as np
 import pandas as pd
 
 from audiovocana.conf import (
-    XLSX_FILES,
-    AUDIO_FOLDER,
     COLUMNS,
     PRECOLUMNS,
-    MISSING_VOCALIZATION_LABEL,
+    MISSING_VOCALIZATION_LABEL
 )
 
 
@@ -29,15 +28,15 @@ def get_postnatalday(experiment):
     return experiment.split('P')[-1].split('-')[0]
 
 
-def get_audio_path(recording):
-    return os.path.join(AUDIO_FOLDER, f"T0000{recording}.WAV")
+def get_audio_path(recording, audio_folder):
+    return os.path.join(audio_folder, f"T0000{recording}.WAV")
 
 
 def get_experiment_from_xlsx_path(path):
     return os.path.split(path)[-1].split(".xlsx")[0]
 
 
-def format_dataframe(experiment, recording, df):
+def format_dataframe(experiment, recording, df, audio_folder):
         # remove columns with empty strings
         df = df.replace('', np.nan).dropna(axis=1, how='all')
         # remove rows with NAN values
@@ -52,8 +51,8 @@ def format_dataframe(experiment, recording, df):
             return None
         elif (lf > lp):
             w = f"Dropping last columns of recording {recording} from "
-            w += f"experiment {experiment}: number of non-empty lines is {lf}, "
-            w += f"more than {lp}."
+            w += f"experiment {experiment}: number of non-empty lines is {lf},"
+            w += f" more than {lp}."
             warnings.warn(w, UserWarning)
             df = df.iloc[:, :14]
         # name columns
@@ -79,7 +78,7 @@ def format_dataframe(experiment, recording, df):
             experiment=experiment)
         df = df.assign(
             postnatalday=get_postnatalday(experiment),
-            audio_path=get_audio_path(recording),
+            audio_path=get_audio_path(recording, audio_folder),
             nest=get_nest_number(experiment),
             year=get_year(experiment))
         # remove not used columns
@@ -90,7 +89,7 @@ def format_dataframe(experiment, recording, df):
         return df
 
 
-def create_dataframes(path):
+def create_dataframes(path, xlsx_folder, audio_folder):
     dicc = pd.read_excel(
         path,
         sheet_name=None,
@@ -101,6 +100,7 @@ def create_dataframes(path):
     for recording, df in dicc.items():
         df = format_dataframe(
             experiment=get_experiment_from_xlsx_path(path),
+            audio_folder=audio_folder,
             recording=recording,
             df=df)
         if df is not None:
@@ -109,11 +109,28 @@ def create_dataframes(path):
     return dfs
 
 
-def get_dataframe():
-    # reate individual dataframes for each recording from elsx files
-    # and concatenate them
-    df = pd.concat([
-        df for file in XLSX_FILES for df in create_dataframes(file)])
+def get_dataframe(
+    xlsx_folder=None,
+    audio_folder=None,
+    csv_path=None,
+    save=False
+):
+    recomputed = False
+    if csv_path is not None and os.path.exists(csv_path):
+        print(f"Reading csv from {csv_path}.")
+        df = pd.read_csv(csv_path)
+        recomputed = False
+    else:
+        # create individual dataframes for each recording from xlsx files
+        # and concatenate them
+        xlsx_files = glob(os.path.join(xlsx_folder, "*.xlsx"))
+        df = pd.concat([
+            df for file in xlsx_files for df in create_dataframes(
+                file, xlsx_folder, audio_folder)])
+        recomputed = True
+    if csv_path is not None and save and recomputed:
+        df.to_csv(csv_path, index=False, header=True, encoding='utf-8')
+        print(f"Dataframe saved to {csv_path}.")
     m = f"Found {df.shape[0]} events "
     m += f"from {df.experiment.nunique()} different experiments "
     m += f"and {df.recording.nunique()} different recordings"

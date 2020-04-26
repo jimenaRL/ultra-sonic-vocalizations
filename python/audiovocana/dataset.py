@@ -10,7 +10,6 @@ from audiovocana.preprocessing import get_dataframe
 from audiovocana.conf import (
     MIN_WAVEFORM_LENGTH,
     MIN_STFT_LENGTH,
-    CACHEDIR,
     SEED
 )
 from audiovocana.audio_features import (
@@ -20,11 +19,10 @@ from audiovocana.audio_features import (
     compute_melspectrogram_tf)
 
 
-def set_cache(dataset, cache_name, recompute):
-    if cache_name:
-        cache_folder = os.path.join(CACHEDIR, cache_name)
-        cache_prefix = os.path.join(CACHEDIR, cache_name, cache_name)
+def manage_cache(dataset, cache_folder, recompute):
+    if cache_folder:
         os.makedirs(cache_folder, exist_ok=True)
+        cache_prefix = os.path.join(cache_folder, "dataset")
         dataset = dataset.cache(cache_prefix)
         if recompute:
             try:
@@ -58,9 +56,14 @@ def inverse(tensor):
     return tf.math.multiply(-1.0, tensor)
 
 
-def get_dataset(shuffle=True, cache_name=None, recompute=False):
+def get_dataset(
+    csv_path=None,
+    shuffle=True,
+    cache_folder=None,
+    recompute=False
+):
 
-    df = get_dataframe()
+    df = get_dataframe(csv_path=csv_path, save=False)
 
     # create dataset
     dataset = (
@@ -128,9 +131,10 @@ def get_dataset(shuffle=True, cache_name=None, recompute=False):
             sample, max_mfcc=reduce_time_max((sample['inv_mfcc']))))
 
     # shuffle
-    dataset = dataset.shuffle(buffer_size=10, seed=SEED)
+    if shuffle:
+        dataset = dataset.shuffle(buffer_size=10, seed=SEED)
 
-    dataset = set_cache(dataset, cache_name, recompute)
+    dataset = manage_cache(dataset, cache_folder, recompute)
 
     iterator = iter(dataset)
     for sample in tqdm(iterator):

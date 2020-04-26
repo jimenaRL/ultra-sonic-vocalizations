@@ -1,6 +1,5 @@
 import os
 import librosa
-from glob import glob
 import numpy as np
 
 SEED = 666
@@ -13,24 +12,6 @@ try:
     FFPROBE_BINARY = os.environ["FFPROBE_BINARY"]
 except Exception as e:
     print(f"Missing environ variable 'FFPROBE_BINARY'.")
-
-
-BASE_PATH = os.environ["AUDIOVOCANA_BASE_PATH"]
-XLSX_FOLDER = os.environ["AUDIOVOCANA_XLSX_FOLDER"]
-AUDIO_FOLDER = os.environ["AUDIOVOCANA_AUDIO_FOLDER"]
-
-print("~~~~~~ AUDIOVOCANA PARAMS ~~~~~~")
-print(f"BASE_PATH = {BASE_PATH}")
-print(f"XLSX_FOLDER = {XLSX_FOLDER}")
-print(f"AUDIO_FOLDER = {AUDIO_FOLDER}")
-
-
-CACHEDIR = os.path.join(BASE_PATH, "cache")
-PLOTS_PATH = os.path.join(BASE_PATH, 'plots')
-
-
-XLSX_FILES = glob(os.path.join(XLSX_FOLDER, "*.xlsx"))
-
 
 PRECOLUMNS = [
     "event", "C", "D", "E", "F", "t0", "t1",
@@ -114,13 +95,18 @@ MFCCPAMARS = {
 
 MELFB = librosa.filters.mel(**MELPARAMS)
 
+# DATASET PARAMS
+MIN_WAVEFORM_LENGTH = 3
+MIN_STFT_LENGTH = 9
+
+print("~~~~~~ AUDIOVOCANA SETTINGS ~~~~~~")
+print(f"AUDIOPARAMS \n {AUDIOPARAMS}")
+print(f"STFTPARAMS \n {STFTPARAMS}")
+print(f"MELPARAMS \n {MELPARAMS}")
+print(f"MFCCPAMARS \n {MFCCPAMARS}")
 print(f"mel fiterbank shape = {MELFB.shape}")
 print(
     f"STFT time resolution = {1000 * MELPARAMS['n_fft']/AUDIOPARAMS['sr']} ms")
 print(
     f"STFT frequency resolution = {MELPARAMS['fmax']/MELPARAMS['n_fft']} Hz\n")
 
-
-# DATASET PARAMS
-MIN_WAVEFORM_LENGTH = 3
-MIN_STFT_LENGTH = 9
