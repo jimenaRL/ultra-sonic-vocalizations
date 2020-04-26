@@ -3,6 +3,9 @@ import librosa
 from glob import glob
 import numpy as np
 
+SEED = 666
+
+FFMPEG_BINARY = "/home/utilisateur/anaconda3/envs/palomars/bin/ffmpeg"
 
 BASE_PATH = os.environ["AUDIOVOCANA_BASE_PATH"]
 XLSX_FOLDER = os.environ["AUDIOVOCANA_XLSX_FOLDER"]
@@ -14,7 +17,7 @@ print(f"XLSX_FOLDER = {XLSX_FOLDER}")
 print(f"AUDIO_FOLDER = {AUDIO_FOLDER}")
 
 
-CACHEDIR = os.path.join(BASE_PATH, "dataset", "features-full")
+CACHEDIR = os.path.join(BASE_PATH, "cache")
 PLOTS_PATH = os.path.join(BASE_PATH, 'plots')
 
 
@@ -36,7 +39,7 @@ COLUMNS = {
     "year": str,
     "audio_path": str,
     "experiment": str,
-    "recording": str,
+    "recording": str
 }
 
 MISSING_VOCALIZATION_LABEL = 0
@@ -108,3 +111,8 @@ print(
     f"STFT time resolution = {1000 * MELPARAMS['n_fft']/AUDIOPARAMS['sr']} ms")
 print(
     f"STFT frequency resolution = {MELPARAMS['fmax']/MELPARAMS['n_fft']} Hz\n")
+
+
+# DATASET PARAMS
+MIN_WAVEFORM_LENGTH = 3
+MIN_STFT_LENGTH = 9

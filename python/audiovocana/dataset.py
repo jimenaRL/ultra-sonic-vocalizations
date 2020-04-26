@@ -1,199 +1,49 @@
 import os
 import shutil
-import warnings
 
 from tqdm import tqdm
 
-import numpy as np
-import pandas as pd
 import tensorflow as tf
 
-import librosa
-
 from audiovocana.preprocessing import get_dataframe
+
 from audiovocana.conf import (
-    XLSX_FILES,
-    AUDIO_FOLDER,
-    COLUMNS,
-    PRECOLUMNS,
-    MISSING_VOCALIZATION_LABEL,
-    AUDIOPARAMS,
-    STFTPARAMS,
-    MELPARAMS,
-    MFCCPAMARS,
-    CACHEDIR
+    MIN_WAVEFORM_LENGTH,
+    MIN_STFT_LENGTH,
+    CACHEDIR,
+    SEED
 )
+from audiovocana.audio_features import (
+    load_audio_tf,
+    compute_stft_tf,
+    compute_mfcc_tf,
+    compute_melspectrogram_tf)
 
 
-def get_recording(experiment):
-    return experiment.split('-')[-1].split('.csv')[0]
+def set_cache(dataset, cache_name, recompute):
+    if cache_name:
+        cache_folder = os.path.join(CACHEDIR, cache_name)
+        cache_prefix = os.path.join(CACHEDIR, cache_name, cache_name)
+        os.makedirs(cache_folder, exist_ok=True)
+        dataset = dataset.cache(cache_prefix)
+        if recompute:
+            try:
+                shutil.rmtree(cache_folder, ignore_errors=True)
+                os.mkdir(cache_folder)
+                mss = f"Directory {cache_folder} has been removed"
+                mss += "and recreated successfully."
+                print(mss)
+            except Exception as e:
+                print(e)
+    return dataset
 
 
-def get_nest_number(experiment):
-    return experiment.split('N')[-1][0]
+def check_tensor_shape_audio(tensor):
+    return tf.math.greater_equal(tf.shape(tensor)[0], MIN_WAVEFORM_LENGTH)
 
 
-def get_postnatalday(experiment):
-    return experiment.split('P')[-1].split('-')[0]
-
-
-def get_audio_path(recording):
-    ap = os.path.join(AUDIO_FOLDER, f"T0000{recording}.WAV")
-    if not os.path.exists(ap):
-        w = f"Path to audio file '{ap}' does not exist in system."
-        warnings.warn(w)
-    return ap
-
-
-def get_experiment_from_xlsx_path(path):
-    return os.path.split(path)[-1].split(".xlsx")[0]
-
-
-def format_dataframe(experiment, recording, df):
-        # remove columns with empty strings
-        df = df.replace('', np.nan).dropna(axis=1, how='all')
-        # remove rows with NAN values
-        df = df.dropna(axis=0, how='any')
-        # remove recordings with no events
-        lf = df.shape[1]
-        lp = len(PRECOLUMNS)
-        if (lf < lp):
-            w = f"Dropping recording {recording} from experiment {experiment}:"
-            w += f" number of non-empty lines is {lf}, less than {lp}."
-            warnings.warn(w, UserWarning)
-            print(df.head())
-            return None
-        elif (lf > lp):
-            w = f"Dropping last columns of recording {recording} from "
-            w += f"experiment{experiment}: number of non-empty lines is {lf}, "
-            w += f"more than {lp}."
-            warnings.warn(w)
-            print(df.head())
-            df = df.iloc[:, :14]
-        # name columns
-        df.columns = PRECOLUMNS
-        # replace missing vocalization annotations
-        df.vocalization.fillna(MISSING_VOCALIZATION_LABEL, inplace=True)
-        # manually convert comma to points in numeric columns encoded as string
-        # and convert to float in order to prevent later failure
-        if pd.api.types.is_string_dtype(df.dtypes.t0):
-            df = df.assign(
-                t0=pd.to_numeric(df.t0.apply(lambda s: s.replace(',', '.'))))
-        if pd.api.types.is_string_dtype(df.dtypes.t1):
-            df = df.assign(
-                t1=pd.to_numeric(df.t1.apply(lambda s: s.replace(',', '.'))))
-        # add event duration info
-        df = df.assign(
-            recording=recording,
-            experiment=experiment,
-            duration=df['t1']-df['t0'])
-        # add extra info
-        df = df.assign(
-            recording=recording,
-            experiment=experiment)
-        df = df.assign(
-            postnatalday=get_postnatalday(experiment),
-            audio_path=get_audio_path(recording),
-            nest=get_nest_number(experiment))
-        # remove not used columns
-        df = df[list(COLUMNS.keys())]
-        # fix dtypes
-        df = df.astype(COLUMNS)
-
-        return df
-
-
-def create_dataframes(path):
-    dicc = pd.read_excel(
-        path,
-        sheet_name=None,
-        header=0,
-        na_values=0,
-        keep_default_na=False)
-    dfs = []
-    for recording, df in dicc.items():
-        df = format_dataframe(
-            experiment=get_experiment_from_xlsx_path(path),
-            recording=recording,
-            df=df)
-        if df is not None:
-            dfs.append(df)
-
-    return dfs
-
-
-def load_audio(path, offset, duration):
-    return librosa.core.load(
-        path=path.numpy(),
-        offset=offset.numpy(),
-        duration=duration.numpy(),
-        **AUDIOPARAMS)
-
-
-def compute_stft(audio):
-    return np.abs(librosa.stft(y=audio.numpy(), **STFTPARAMS))
-
-
-def compute_melspectrogram(spectrogram):
-    return librosa.feature.melspectrogram(S=spectrogram, **MELPARAMS)
-
-
-def compute_mfcc(melspectrogram):
-    tmp = librosa.feature.mfcc(
-        S=librosa.power_to_db(melspectrogram), **MFCCPAMARS)
-    width = min(tmp.shape[1], 9)
-    MFCC = tmp[1:, :]
-    d_MFCC = librosa.feature.delta(tmp, width=width)
-    dd_MFCC = librosa.feature.delta(d_MFCC, width=width)
-    return np.vstack([MFCC, d_MFCC, dd_MFCC])
-
-
-def load_audio_tf(sample):
-    return tf.py_function(
-        func=load_audio,
-        inp=[sample['audio_path'], sample['t0'], sample['duration']],
-        Tout=tf.float32)
-
-
-def compute_stft_tf(sample):
-    return tf.py_function(
-        func=compute_stft,
-        inp=[sample['audio']],
-        Tout=tf.float32)
-
-
-def compute_melspectrogram_tf(sample):
-    return tf.py_function(
-        func=compute_melspectrogram,
-        inp=[sample['stft']],
-        Tout=tf.float32)
-
-
-def compute_mfcc_tf(sample):
-    return tf.py_function(
-        func=compute_mfcc,
-        inp=[sample['mel']],
-        Tout=tf.float32)
-
-
-def load_audio_dataset(sample):
-    return dict(sample, audio=load_audio_tf(sample))
-
-
-def compute_stft_dataset(sample):
-    return dict(sample, stft=compute_stft_tf(sample))
-
-
-def compute_melspectrogram_dataset(sample):
-    return dict(sample, mel=compute_melspectrogram_tf(sample))
-
-
-def compute_mfcc_dataset(sample):
-    return dict(sample, mfcc=compute_mfcc_tf(sample))
-
-
-def check_tensor_shape(tensor):
-    return tf.math.greater_equal(tf.shape(tensor)[1], 9)
+def check_tensor_shape_stft(tensor):
+    return tf.math.greater_equal(tf.shape(tensor)[1], MIN_STFT_LENGTH)
 
 
 def reduce_time_mean(tensor):
@@ -208,21 +58,11 @@ def inverse(tensor):
     return tf.math.multiply(-1.0, tensor)
 
 
-def get_dataframe():
-
-    df = pd.concat([
-        df for file in XLSX_FILES for df in create_dataframes(file)])
-
-    # shuffle data frame
-    df = df.sample(frac=1)
-
-    return df
-
-
-def get_dataset(recompute=False, element_spec=False):
+def get_dataset(shuffle=True, cache_name=None, recompute=False):
 
     df = get_dataframe()
 
+    # create dataset
     dataset = (
         tf.data.Dataset.from_tensor_slices({
             key: df[key].values for key in df
@@ -231,17 +71,26 @@ def get_dataset(recompute=False, element_spec=False):
     )
 
     # compute audio
-    dataset = dataset.map(load_audio_dataset)
+    dataset = dataset.map(
+        lambda sample: dict(sample, audio=load_audio_tf(sample)))
+
+    # filter out bad shaped audio
+    dataset = dataset.filter(
+        lambda sample: check_tensor_shape_audio(sample["audio"]))
 
     # compute audio stft
-    dataset = dataset.map(compute_stft_dataset)
+    dataset = dataset.map(
+        lambda sample: dict(sample, stft=compute_stft_tf(sample)))
 
     # filter out bad shape stft
-    dataset = dataset.filter(lambda sample: check_tensor_shape(sample["stft"]))
+    dataset = dataset.filter(
+        lambda sample: check_tensor_shape_stft(sample["stft"]))
 
     # compute audio features
-    dataset = dataset.map(compute_melspectrogram_dataset)
-    dataset = dataset.map(compute_mfcc_dataset)
+    dataset = dataset.map(
+        lambda sample: dict(sample, mel=compute_melspectrogram_tf(sample)))
+    dataset = dataset.map(
+        lambda sample: dict(sample, mfcc=compute_mfcc_tf(sample)))
 
     # map dynamic compression
     C = 1000
@@ -271,26 +120,17 @@ def get_dataset(recompute=False, element_spec=False):
     dataset = dataset.map(
         lambda sample: dict(
             sample, max_stft=reduce_time_max((sample['inv_stft']))))
-    dataset = dataset.map
-    (lambda sample: dict(sample, max_mel=reduce_time_max((sample['inv_mel']))))
+    dataset = dataset.map(
+        lambda sample: dict(
+            sample, max_mel=reduce_time_max((sample['inv_mel']))))
     dataset = dataset.map(
         lambda sample: dict(
             sample, max_mfcc=reduce_time_max((sample['inv_mfcc']))))
 
-    dataset = dataset.cache(CACHEDIR)
+    # shuffle
+    dataset = dataset.shuffle(buffer_size=10, seed=SEED)
 
-    if element_spec:
-        print(dataset.element_spec)
-
-    if recompute:
-        try:
-            shutil.rmtree(CACHEDIR, ignore_errors=True)
-            os.mkdir(CACHEDIR)
-            mss = f"Directory {CACHEDIR} has been removed"
-            mss += "and recreated successfully."
-            print(mss)
-        except Exception as e:
-            print(e)
+    dataset = set_cache(dataset, cache_name, recompute)
 
     iterator = iter(dataset)
     for sample in tqdm(iterator):

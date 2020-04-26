@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 from audiovocana.conf import (
+    SEED,
     XLSX_FILES,
     AUDIO_FOLDER,
     COLUMNS,
@@ -30,11 +31,7 @@ def get_postnatalday(experiment):
 
 
 def get_audio_path(recording):
-    ap = os.path.join(AUDIO_FOLDER, f"T0000{recording}.WAV")
-    if not os.path.exists(ap):
-        w = f"Path to audio file '{ap}' does not exist in system."
-        warnings.warn(w)
-    return ap
+    return os.path.join(AUDIO_FOLDER, f"T0000{recording}.WAV")
 
 
 def get_experiment_from_xlsx_path(path):
@@ -56,9 +53,9 @@ def format_dataframe(experiment, recording, df):
             return None
         elif (lf > lp):
             w = f"Dropping last columns of recording {recording} from "
-            w += f"experiment{experiment}: number of non-empty lines is {lf}, "
+            w += f"experiment {experiment}: number of non-empty lines is {lf}, "
             w += f"more than {lp}."
-            warnings.warn(w)
+            warnings.warn(w, UserWarning)
             df = df.iloc[:, :14]
         # name columns
         df.columns = PRECOLUMNS
@@ -72,7 +69,7 @@ def format_dataframe(experiment, recording, df):
         if pd.api.types.is_string_dtype(df.dtypes.t1):
             df = df.assign(
                 t1=pd.to_numeric(df.t1.apply(lambda s: s.replace(',', '.'))))
-        # add event duration info
+        # add event infos
         df = df.assign(
             recording=recording,
             experiment=experiment,
@@ -118,9 +115,6 @@ def get_dataframe():
     # and concatenate them
     df = pd.concat([
         df for file in XLSX_FILES for df in create_dataframes(file)])
-    # shuffle data frame
-    df = df.sample(frac=1)
-
     m = f"Found {df.shape[0]} events "
     m += f"from {df.experiment.nunique()} different experiments "
     m += f"and {df.recording.nunique()} different recordings"
