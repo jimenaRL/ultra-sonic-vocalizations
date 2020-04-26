@@ -5,8 +5,15 @@ import numpy as np
 
 SEED = 666
 
-FFMPEG_BINARY = os.environ["AUDIOVOCANA_FFMPEG_BINARY"]
-FFPROBE_BINARY = os.environ["AUDIOVOCANA_FFPROBE_BINARY"]
+try:
+    FFMPEG_BINARY = os.environ["FFMPEG_BINARY"]
+except Exception as e:
+    print(f"Missing environ variable 'FFMPEG_BINARY'.")
+try:
+    FFPROBE_BINARY = os.environ["FFPROBE_BINARY"]
+except Exception as e:
+    print(f"Missing environ variable 'FFPROBE_BINARY'.")
+
 
 BASE_PATH = os.environ["AUDIOVOCANA_BASE_PATH"]
 XLSX_FOLDER = os.environ["AUDIOVOCANA_XLSX_FOLDER"]
