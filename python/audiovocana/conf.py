@@ -5,7 +5,8 @@ import numpy as np
 
 SEED = 666
 
-FFMPEG_BINARY = "/home/utilisateur/anaconda3/envs/palomars/bin/ffmpeg"
+FFMPEG_BINARY = os.environ["AUDIOVOCANA_FFMPEG_BINARY"]
+FFPROBE_BINARY = os.environ["AUDIOVOCANA_FFPROBE_BINARY"]
 
 BASE_PATH = os.environ["AUDIOVOCANA_BASE_PATH"]
 XLSX_FOLDER = os.environ["AUDIOVOCANA_XLSX_FOLDER"]
