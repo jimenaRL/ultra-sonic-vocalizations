@@ -94,7 +94,7 @@ def load_audio_file(
         if 'no such file' in line:
             raise IOError('file not found')
         elif 'invalid data found' in line:
-            raise UnsupportedError()
+            raise OSError()
         elif 'audio:' in line:
             n_channels, samplerate = extract_channels_and_samplerate(line)
             break
