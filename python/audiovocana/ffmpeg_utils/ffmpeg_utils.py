@@ -92,7 +92,7 @@ def load_audio_file(
         line = line.strip().lower()
 
         if 'no such file' in line:
-            raise IOError('file not found')
+            raise IOError(f'file not found: {line}')
         elif 'invalid data found' in line:
             raise OSError()
         elif 'audio:' in line:
