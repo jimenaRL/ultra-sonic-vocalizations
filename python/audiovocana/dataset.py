@@ -36,12 +36,8 @@ def manage_cache(dataset, cache_folder, recompute):
     return dataset
 
 
-def check_tensor_shape_audio(tensor):
-    return tf.math.greater_equal(tf.shape(tensor)[0], MIN_WAVEFORM_LENGTH)
-
-
-def check_tensor_shape_stft(tensor):
-    return tf.math.greater_equal(tf.shape(tensor)[1], MIN_STFT_LENGTH)
+def check_tensor_shape(tensor, d, minlength):
+    return tf.math.greater_equal(tf.shape(tensor)[d], minlength)
 
 
 def reduce_time_mean(tensor):
@@ -78,14 +74,11 @@ def get_dataset(
 
     # filter out bad shaped audio
     dataset = dataset.filter(
-        lambda sample: check_tensor_shape_audio(sample["audio"]))
+        lambda sample: check_tensor_shape(
+            sample["audio"], 0, MIN_WAVEFORM_LENGTH))
 
     # compute audio stft
     dataset = dataset.map(compute_stft_tf)
-
-    # filter out bad shape stft
-    dataset = dataset.filter(
-        lambda sample: check_tensor_shape_stft(sample["stft"]))
 
     # compute audio features
     dataset = dataset.map(compute_melspectrogram_tf)
