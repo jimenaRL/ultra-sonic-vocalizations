@@ -55,14 +55,17 @@ AUDIOPARAMS = {
 }
 
 # STFT PARAMS
-NFFT = 2048*4
-HOPLENGTH = int(NFFT/16)
+NFFT = 2048*4  # 2048
+HOPLENGTH = int(NFFT/16)  # int(NFFT/4)
 WINLENGTH = NFFT
+NBFFTBINS = 1 + NFFT / 2
+CENTER_WINDOWS = True  # False
 
 STFTPARAMS = {
     'n_fft': NFFT,
     'hop_length': HOPLENGTH,
-    'win_length': WINLENGTH
+    'win_length': WINLENGTH,
+    'center': CENTER_WINDOWS
 }
 
 FFTFREQS = librosa.core.fft_frequencies(
@@ -72,7 +75,7 @@ FFTFREQS = librosa.core.fft_frequencies(
 
 
 # MEL FILTERBANK PARAMS
-NMELS = 128
+NMELS = 128  # 64
 HTK = True
 
 MELPARAMS = {
@@ -95,9 +98,11 @@ MFCCPAMARS = {
 
 MELFB = librosa.filters.mel(**MELPARAMS)
 
-# DATASET PARAMS
-MIN_WAVEFORM_LENGTH = 3
-MIN_STFT_LENGTH = 9
+# SET MIN AUDIO LENGTH ALLOWED
+MIN_STFT_LENGTH = 5
+MIN_WAVEFORM_LENGTH = WINLENGTH + (MIN_STFT_LENGTH - 1) * HOPLENGTH
+MIN_AUDIO_LENGHT_MS = MIN_WAVEFORM_LENGTH * 1e3 / SR
+
 
 print("~~~~~~ AUDIOVOCANA SETTINGS ~~~~~~")
 print(f"AUDIOPARAMS \n {AUDIOPARAMS}")
@@ -105,8 +110,9 @@ print(f"STFTPARAMS \n {STFTPARAMS}")
 print(f"MELPARAMS \n {MELPARAMS}")
 print(f"MFCCPAMARS \n {MFCCPAMARS}")
 print(f"mel fiterbank shape = {MELFB.shape}")
+print(f"Minimun waveform length accepted is {MIN_WAVEFORM_LENGTH} PCM points.")
+print(f"Minimun audio duration accepted is {MIN_AUDIO_LENGHT_MS} miliseconds.")
 print(
-    f"STFT time resolution = {1000 * MELPARAMS['n_fft']/AUDIOPARAMS['sr']} ms")
+    f"STFT time resolution = {1e3 * MELPARAMS['n_fft']/AUDIOPARAMS['sr']} ms.")
 print(
-    f"STFT frequency resolution = {MELPARAMS['fmax']/MELPARAMS['n_fft']} Hz\n")
-
+    f"STFT frequency resolution = {MELPARAMS['fmax']/NBFFTBINS} Hz.")
