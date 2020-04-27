@@ -25,26 +25,39 @@ def load_audio(path, offset, duration):
         #             **AUDIOPARAMS)
         return waveform.flatten(), False
     except Exception as e:
-        # print(e)
+        print(f"load_audio error: {e}")
         return np.array([-1.0]), True
 
 
 def compute_stft(audio):
-    return np.abs(librosa.stft(y=audio.numpy(), **STFTPARAMS)), False
+    try:
+        return np.abs(librosa.stft(y=audio.numpy(), **STFTPARAMS)), False
+    except Exception as e:
+        print(f"compute_stft error: {e}")
+        return np.array([-1.0, -1.0]), True
 
 
 def compute_melspectrogram(spectrogram):
-    return librosa.feature.melspectrogram(S=spectrogram, **MELPARAMS), False
+    try:
+        return librosa.feature.melspectrogram(
+            S=spectrogram, **MELPARAMS), False
+    except Exception as e:
+        print(f"compute_melspectrogram error: {e}")
+        return np.array([-1.0, -1.0]), True
 
 
 def compute_mfcc(melspectrogram):
-    tmp = librosa.feature.mfcc(
-        S=librosa.power_to_db(melspectrogram), **MFCCPAMARS)
-    width = min(tmp.shape[1], 9)
-    MFCC = tmp[1:, :]
-    d_MFCC = librosa.feature.delta(tmp, width=width)
-    dd_MFCC = librosa.feature.delta(d_MFCC, width=width)
-    return np.vstack([MFCC, d_MFCC, dd_MFCC]), False
+    try:
+        tmp = librosa.feature.mfcc(
+            S=librosa.power_to_db(melspectrogram), **MFCCPAMARS)
+        width = min(tmp.shape[1], 9)
+        MFCC = tmp[1:, :]
+        d_MFCC = librosa.feature.delta(tmp, width=width)
+        dd_MFCC = librosa.feature.delta(d_MFCC, width=width)
+        return np.vstack([MFCC, d_MFCC, dd_MFCC]), False
+    except Exception as e:
+        print(f"compute_mfcc error: {e}")
+        return np.array([-1.0, -1.0]), True
 
 
 def load_audio_tf(sample):
