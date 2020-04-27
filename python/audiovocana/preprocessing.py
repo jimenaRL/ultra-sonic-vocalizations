@@ -29,7 +29,10 @@ def get_postnatalday(experiment):
 
 
 def get_audio_path(recording, audio_folder):
-    return os.path.join(audio_folder, f"T0000{recording}.WAV")
+    ap = os.path.join(audio_folder, 'T'+f'{recording}'.zfill(7)+'.WAV')
+    if not os.path.exists(ap):
+        warnings.warn(f"Audio file path {ap} does not exist in system.")
+    return ap
 
 
 def get_experiment_from_xlsx_path(path):
