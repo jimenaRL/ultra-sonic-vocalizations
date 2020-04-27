@@ -9,7 +9,6 @@ from audiovocana.preprocessing import get_dataframe
 
 from audiovocana.conf import (
     MIN_WAVEFORM_LENGTH,
-    MIN_STFT_LENGTH,
     SEED
 )
 from audiovocana.audio_features import (
