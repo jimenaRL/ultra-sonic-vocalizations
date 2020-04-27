@@ -74,26 +74,22 @@ def get_dataset(
     )
 
     # compute audio
-    dataset = dataset.map(
-        lambda sample: dict(sample, audio=load_audio_tf(sample)))
+    dataset = dataset.map(load_audio_tf)
 
     # filter out bad shaped audio
     dataset = dataset.filter(
         lambda sample: check_tensor_shape_audio(sample["audio"]))
 
     # compute audio stft
-    dataset = dataset.map(
-        lambda sample: dict(sample, stft=compute_stft_tf(sample)))
+    dataset = dataset.map(compute_stft_tf)
 
     # filter out bad shape stft
     dataset = dataset.filter(
         lambda sample: check_tensor_shape_stft(sample["stft"]))
 
     # compute audio features
-    dataset = dataset.map(
-        lambda sample: dict(sample, mel=compute_melspectrogram_tf(sample)))
-    dataset = dataset.map(
-        lambda sample: dict(sample, mfcc=compute_mfcc_tf(sample)))
+    dataset = dataset.map(compute_melspectrogram_tf)
+    dataset = dataset.map(compute_mfcc_tf)
 
     # map dynamic compression
     C = 1000

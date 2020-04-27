@@ -23,18 +23,18 @@ def load_audio(path, offset, duration):
         #             offset=offset.numpy(),
         #             duration=duration.numpy(),
         #             **AUDIOPARAMS)
-        return waveform.flatten()
+        return waveform.flatten(), False
     except Exception as e:
-        print(e)
-        return np.array([-1.0])
+        # print(e)
+        return np.array([-1.0]), True
 
 
 def compute_stft(audio):
-    return np.abs(librosa.stft(y=audio.numpy(), **STFTPARAMS))
+    return np.abs(librosa.stft(y=audio.numpy(), **STFTPARAMS)), False
 
 
 def compute_melspectrogram(spectrogram):
-    return librosa.feature.melspectrogram(S=spectrogram, **MELPARAMS)
+    return librosa.feature.melspectrogram(S=spectrogram, **MELPARAMS), False
 
 
 def compute_mfcc(melspectrogram):
@@ -44,32 +44,36 @@ def compute_mfcc(melspectrogram):
     MFCC = tmp[1:, :]
     d_MFCC = librosa.feature.delta(tmp, width=width)
     dd_MFCC = librosa.feature.delta(d_MFCC, width=width)
-    return np.vstack([MFCC, d_MFCC, dd_MFCC])
+    return np.vstack([MFCC, d_MFCC, dd_MFCC]), False
 
 
 def load_audio_tf(sample):
-    return tf.py_function(
+    res = tf.py_function(
         func=load_audio,
         inp=[sample['audio_path'], sample['t0'], sample['duration']],
-        Tout=tf.float32)
+        Tout=(tf.float32, tf.bool))
+    return dict(list(sample.items()) + [("audio", res[0]), ("error", res[1])])
 
 
 def compute_stft_tf(sample):
-    return tf.py_function(
+    res = tf.py_function(
         func=compute_stft,
         inp=[sample['audio']],
-        Tout=tf.float32)
+        Tout=(tf.float32, tf.bool))
+    return dict(list(sample.items()) + [("stft", res[0]), ("error", res[1])])
 
 
 def compute_melspectrogram_tf(sample):
-    return tf.py_function(
+    res = tf.py_function(
         func=compute_melspectrogram,
         inp=[sample['stft']],
-        Tout=tf.float32)
+        Tout=(tf.float32, tf.bool))
+    return dict(list(sample.items()) + [("mel", res[0]), ("error", res[1])])
 
 
 def compute_mfcc_tf(sample):
-    return tf.py_function(
+    res = tf.py_function(
         func=compute_mfcc,
         inp=[sample['mel']],
-        Tout=tf.float32)
+        Tout=(tf.float32, tf.bool))
+    return dict(list(sample.items()) + [("mfcc", res[0]), ("error", res[1])])
