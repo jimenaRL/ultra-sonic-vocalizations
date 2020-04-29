@@ -8,4 +8,5 @@ Python package for audio and machine learning analysis of ultra-sonic vocalizati
 
 TO DO:
 
-- s
+- full dataset events classification
+- full dataset events hierarchical clustering
