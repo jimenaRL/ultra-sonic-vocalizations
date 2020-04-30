@@ -54,12 +54,32 @@ AUDIOPARAMS = {
     'mono': True,
 }
 
+# --------------------------------------------------------------------
+
+# 1st paramaters set used in results from April 10th, 2020
+NFFT = 2048*4
+HOPLENGTH = int(NFFT/16)
+CENTER_WINDOWS = True
+NMELS = 128
+MIN_STFT_LENGTH = 5
+
+
+# 2nd paramaters set
+# NFFT = 2048
+# HOPLENGTH = int(NFFT/4)
+# CENTER_WINDOWS = False
+# NMELS = 64
+# MIN_STFT_LENGTH = 9
+
+# --------------------------------------------------------------------
+
+
 # STFT PARAMS
-NFFT = 2048*4  # 2048
-HOPLENGTH = int(NFFT/16)  # int(NFFT/4)
+NFFT = NFFT
+HOPLENGTH = HOPLENGTH
 WINLENGTH = NFFT
 NBFFTBINS = 1 + NFFT / 2
-CENTER_WINDOWS = True  # False
+CENTER_WINDOWS = CENTER_WINDOWS
 
 STFTPARAMS = {
     'n_fft': NFFT,
@@ -75,7 +95,7 @@ FFTFREQS = librosa.core.fft_frequencies(
 
 
 # MEL FILTERBANK PARAMS
-NMELS = 128  # 64
+NMELS = NMELS
 HTK = True
 
 MELPARAMS = {
@@ -99,7 +119,7 @@ MFCCPAMARS = {
 MELFB = librosa.filters.mel(**MELPARAMS)
 
 # SET MIN AUDIO LENGTH ALLOWED
-MIN_STFT_LENGTH = 5
+MIN_STFT_LENGTH = MIN_STFT_LENGTH
 MIN_WAVEFORM_LENGTH = WINLENGTH + (MIN_STFT_LENGTH - 1) * HOPLENGTH
 MIN_AUDIO_LENGHT_MS = MIN_WAVEFORM_LENGTH * 1e3 / SR
 
