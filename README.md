@@ -8,4 +8,10 @@ Python package for audio and machine learning analysis of ultra-sonic vocalizati
 
 TO DO:
 
-- Write python package setup file.
+dev
+- Write python package setup file
+
+research
+- full dataset events classification
+- full dataset events hierarchical clustering
+
