@@ -8,4 +8,4 @@ Python package for audio and machine learning analysis of ultra-sonic vocalizati
 
 TO DO:
 
-- s
+- Write python package setup file.
