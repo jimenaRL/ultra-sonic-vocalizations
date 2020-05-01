@@ -10,7 +10,10 @@ TO DO:
 dev
 - Write python package setup file
 
-research
+dataset
+1. Write stratified sampling method
+
+stats
 - full dataset events classification
 - full dataset events hierarchical clustering
 
