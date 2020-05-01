@@ -7,11 +7,12 @@ Python package for audio and machine learning analysis of ultra-sonic vocalizati
 
 TO DO:
 
-dev
+devops
 1. Write python package setup file
 
 dataset
-1. Write stratified sampling method
+1. Extend dataframe types accepted in dataset creation
+2. Write stratified sampling method
 
 stats
 1. full dataset events classification
