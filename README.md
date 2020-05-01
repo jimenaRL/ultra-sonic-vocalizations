@@ -12,7 +12,8 @@ devops
 
 dataset
 1. Extend dataframe types accepted in dataset creation
-2. Write stratified sampling method
+2. Write exporting functions
+3. Write stratified sampling method
 
 stats
 1. full dataset events classification
