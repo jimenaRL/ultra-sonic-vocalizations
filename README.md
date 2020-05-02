@@ -14,6 +14,7 @@ dataset
 1. Extend dataframe types accepted in dataset creation
 2. Write exporting functions
 3. Write stratified sampling method
+4. Add tensorboard viz
 
 stats
 1. full dataset events classification
