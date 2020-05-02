@@ -8,7 +8,8 @@ Python package for audio and machine learning analysis of ultra-sonic vocalizati
 TO DO:
 
 devops
-1. Write python package setup file
+1. Add docker image
+2. Write python package setup file
 
 dataset
 1. Extend dataframe types accepted in dataset creation
