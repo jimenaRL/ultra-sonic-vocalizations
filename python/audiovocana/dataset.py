@@ -124,8 +124,8 @@ def get_dataset(
 
     dataset = manage_cache(dataset, cache_folder, recompute)
 
-    iterator = iter(dataset)
-    for sample in tqdm(iterator):
-        pass
+    if recompute:
+        for sample in tqdm(iter(dataset)):
+            pass
 
     return dataset
