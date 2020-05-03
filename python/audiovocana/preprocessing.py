@@ -8,6 +8,7 @@ import pandas as pd
 from audiovocana.conf import (
     COLUMNS,
     PRECOLUMNS,
+    YEARLABELMAPPING,
     MISSING_VOCALIZATION_LABEL
 )
 
@@ -26,6 +27,10 @@ def get_year(experiment):
 
 def get_postnatalday(experiment):
     return experiment.split('P')[-1].split('-')[0]
+
+
+def get_mother_experience(experiment):
+    return experiment[4]
 
 
 def get_audio_path(recording, audio_folder):
@@ -60,8 +65,6 @@ def format_dataframe(experiment, recording, df, audio_folder):
             df = df.iloc[:, :14]
         # name columns
         df.columns = PRECOLUMNS
-        # replace missing vocalization annotations
-        df.vocalization.fillna(MISSING_VOCALIZATION_LABEL, inplace=True)
         # manually convert comma to points in numeric columns encoded as string
         # and convert to float in order to prevent later failure
         if pd.api.types.is_string_dtype(df.dtypes.t0):
@@ -80,19 +83,25 @@ def format_dataframe(experiment, recording, df, audio_folder):
             recording=recording,
             experiment=experiment)
         df = df.assign(
+            mother=get_mother_experience(experiment),
             postnatalday=get_postnatalday(experiment),
             audio_path=get_audio_path(recording, audio_folder),
             nest=get_nest_number(experiment),
             year=get_year(experiment))
+        # replace missing vocalization annotations
+        df.vocalization.fillna(MISSING_VOCALIZATION_LABEL, inplace=True)
         # remove not used columns
         df = df[list(COLUMNS.keys())]
         # fix dtypes
         df = df.astype(COLUMNS)
+        # manage different labeling for different years
+        df = df.assign(vocalization=df.apply(
+            lambda r: YEARLABELMAPPING[int(r.year)][r.vocalization], axis=1))
 
         return df
 
 
-def create_dataframes(path, xlsx_folder, audio_folder):
+def create_dataframes(path, audio_folder):
     dicc = pd.read_excel(
         path,
         sheet_name=None,
@@ -116,10 +125,11 @@ def get_dataframe(
     xlsx_folder=None,
     audio_folder=None,
     csv_path=None,
+    recompute=False,
     save=False
 ):
     recomputed = False
-    if csv_path is not None and os.path.exists(csv_path):
+    if csv_path is not None and os.path.exists(csv_path) and not recompute:
         print(f"Reading csv from {csv_path}.")
         df = pd.read_csv(csv_path)
         recomputed = False
@@ -129,7 +139,7 @@ def get_dataframe(
         xlsx_files = glob(os.path.join(xlsx_folder, "*.xlsx"))
         df = pd.concat([
             df for file in xlsx_files for df in create_dataframes(
-                file, xlsx_folder, audio_folder)])
+                file, audio_folder)])
         recomputed = True
     if csv_path is not None and save and recomputed:
         df.to_csv(csv_path, index=False, header=True, encoding='utf-8')
