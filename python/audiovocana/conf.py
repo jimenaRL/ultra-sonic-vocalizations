@@ -28,8 +28,24 @@ COLUMNS = {
     "year": str,
     "audio_path": str,
     "experiment": str,
-    "recording": str
+    "recording": str,
+    "mother": str,
 }
+
+
+# Paloma on April 14th, 2020:
+# 17 / 19: es el agno en que se registraron
+# creo es importante manter untrack de eso, porque como se registraron con
+# tanta diferencia de tiempo puede que haya diferencia
+# los del grupo del 19, los Nest van del 2 al 5, porque perdimos el 1
+# eso
+# haaa y los files del 19
+# no estan clasificados en 1 y 2
+# pero 1, 2 y 3
+# fue mi intento de clasificar los audibles en dos groups
+# entonces 1 y 2 son audible  y 3 es USV
+# entonces hay que separarlo como los otros no mas
+# entre USV y audibles
 
 MISSING_VOCALIZATION_LABEL = 0
 
@@ -44,6 +60,20 @@ COLORS = {
     2: 'tab:orange'
 }
 
+YEARLABELMAPPING = {
+    17: {
+        0: 0,
+        1: 1,
+        2: 2
+    },
+    19: {
+        0: 0,
+        1: 1,
+        2: 1,
+        3: 2
+    }
+}
+
 # AUDIO PARAMS
 SR = int(250e3)
 FMIN = 0
@@ -56,20 +86,20 @@ AUDIOPARAMS = {
 
 # --------------------------------------------------------------------
 
-# 1st paramaters set used in results from April 10th, 2020
+# 1st  set paramaters, used in results from April 10th, 2020
 NFFT = 2048*4
 HOPLENGTH = int(NFFT/16)
 CENTER_WINDOWS = True
 NMELS = 128
-MIN_STFT_LENGTH = 5
+MIN_STFT_LENGTH = 9
 
 
-# 2nd paramaters set
+# 2nd set paramaters
 # NFFT = 2048
 # HOPLENGTH = int(NFFT/4)
 # CENTER_WINDOWS = False
 # NMELS = 64
-# MIN_STFT_LENGTH = 9
+# MIN_STFT_LENGTH = 5
 
 # --------------------------------------------------------------------
 
@@ -120,7 +150,10 @@ MELFB = librosa.filters.mel(**MELPARAMS)
 
 # SET MIN AUDIO LENGTH ALLOWED
 MIN_STFT_LENGTH = MIN_STFT_LENGTH
-MIN_WAVEFORM_LENGTH = WINLENGTH + (MIN_STFT_LENGTH - 1) * HOPLENGTH
+if CENTER_WINDOWS:
+    MIN_WAVEFORM_LENGTH = int(WINLENGTH/2) + (MIN_STFT_LENGTH - 1)
+else:
+    MIN_WAVEFORM_LENGTH = WINLENGTH + (MIN_STFT_LENGTH - 1) * HOPLENGTH
 MIN_AUDIO_LENGHT_MS = MIN_WAVEFORM_LENGTH * 1e3 / SR
 
 
@@ -133,6 +166,6 @@ print(f"mel fiterbank shape = {MELFB.shape}")
 print(f"Minimun waveform length accepted is {MIN_WAVEFORM_LENGTH} PCM points.")
 print(f"Minimun audio duration accepted is {MIN_AUDIO_LENGHT_MS} miliseconds.")
 print(
-    f"STFT time resolution = {1e3 * MELPARAMS['n_fft']/AUDIOPARAMS['sr']} ms.")
+    f"STFT time resolution = {1e3 * NFFT / SR} ms.")
 print(
-    f"STFT frequency resolution = {MELPARAMS['fmax']/NBFFTBINS} Hz.")
+    f"STFT frequency resolution = {FMAX / NBFFTBINS} Hz.")
