@@ -8,14 +8,13 @@ Python package for audio and machine learning analysis of ultra-sonic vocalizati
 TO DO:
 
 devops
-1. Add docker image
+1. Add condaz ffmpeg+ffprobe installation in docker image
 2. Write python package setup file
 
 dataset
 1. Extend dataframe types accepted in dataset creation
 2. Write exporting functions
 3. Write stratified sampling method
-4. Add tensorboard viz
 
 stats
 1. full dataset events classification
