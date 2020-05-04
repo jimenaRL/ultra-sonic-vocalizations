@@ -12,6 +12,7 @@ devops
 2. Write python package setup file
 
 dataset
+0. Recheck audio lengths
 1. Extend dataframe types accepted in dataset creation
 2. Write exporting functions
 3. Write stratified sampling method
