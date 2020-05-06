@@ -146,7 +146,13 @@ MFCCPAMARS = {
     'htk': HTK
 }
 
+MELFREQS = librosa.core.mel_frequencies(
+    n_mels=NMELS,
+    fmin=FMIN,
+    fmax=FMAX,
+    htk=HTK)
 MELFB = librosa.filters.mel(**MELPARAMS)
+
 
 # SET MIN AUDIO LENGTH ALLOWED
 MIN_STFT_LENGTH = MIN_STFT_LENGTH
