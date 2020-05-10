@@ -15,7 +15,12 @@ from audiovocana.audio_features import (
     load_audio_tf,
     compute_stft_tf,
     compute_mfcc_tf,
-    compute_melspectrogram_tf)
+    compute_melspectrogram_tf,
+    compute_spectral_centroid_tf,
+    compute_spectral_bandwidth_tf,
+    compute_spectral_flatness_tf,
+    compute_zero_crossing_rate_tf
+)
 
 
 def manage_cache(dataset, cache_folder, recompute):
@@ -39,8 +44,8 @@ def check_tensor_shape(tensor, d, minlength):
     return tf.math.greater_equal(tf.shape(tensor)[d], minlength)
 
 
-def reduce_time_mean(tensor):
-    return tf.math.reduce_mean(tensor, axis=1, keepdims=False)
+def reduce_time_mean(tensor, axis=1):
+    return tf.math.reduce_mean(tensor, axis=axis, keepdims=False)
 
 
 def reduce_time_max(tensor):
@@ -82,6 +87,10 @@ def get_dataset(
     # compute audio features
     dataset = dataset.map(compute_melspectrogram_tf)
     dataset = dataset.map(compute_mfcc_tf)
+    dataset = dataset.map(compute_spectral_centroid_tf)
+    dataset = dataset.map(compute_spectral_bandwidth_tf)
+    dataset = dataset.map(compute_spectral_flatness_tf)
+    dataset = dataset.map(compute_zero_crossing_rate_tf)
 
     # map dynamic compression
     C = 1000
@@ -100,6 +109,18 @@ def get_dataset(
     dataset = dataset.map(
         lambda sample: dict(
             sample, mean_mfcc=reduce_time_mean((sample['mfcc']))))
+    dataset = dataset.map(
+        lambda sample: dict(
+            sample, mean_zrc=reduce_time_mean((sample['zcr']), axis=0)))
+    dataset = dataset.map(
+        lambda sample: dict(
+            sample, mean_sbw=reduce_time_mean((sample['sbw']), axis=0)))
+    dataset = dataset.map(
+        lambda sample: dict(
+            sample, mean_sf=reduce_time_mean((sample['sf']), axis=0)))
+    dataset = dataset.map(
+        lambda sample: dict(
+            sample, mean_sc=reduce_time_mean((sample['sc']), axis=0)))
 
     dataset = dataset.map(
         lambda sample: dict(sample, inv_stft=inverse((sample['stft']))))

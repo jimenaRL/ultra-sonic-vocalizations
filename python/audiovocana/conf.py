@@ -110,12 +110,14 @@ HOPLENGTH = HOPLENGTH
 WINLENGTH = NFFT
 NBFFTBINS = 1 + NFFT / 2
 CENTER_WINDOWS = CENTER_WINDOWS
+WINDOW = 'hann'
 
 STFTPARAMS = {
     'n_fft': NFFT,
     'hop_length': HOPLENGTH,
     'win_length': WINLENGTH,
-    'center': CENTER_WINDOWS
+    'center': CENTER_WINDOWS,
+    'window': WINDOW,
 }
 
 FFTFREQS = librosa.core.fft_frequencies(
@@ -154,6 +156,40 @@ MELFREQS = librosa.core.mel_frequencies(
 MELFB = librosa.filters.mel(**MELPARAMS)
 
 
+# OTHERS PARAMS
+
+SPECTRALCENTROIDPARAMS = {
+    'sr': SR,
+    'n_fft': NFFT,
+    'hop_length': HOPLENGTH,
+    'freq': None,
+}
+
+
+SPECTRALBANDWIDTHPARAMS = {
+    'sr': SR,
+    'n_fft': NFFT,
+    'hop_length': HOPLENGTH,
+    'freq': None,
+    'centroid': None,
+    'norm': True,
+    'p': 2
+}
+
+
+SPECTRALFLATNESSPARAMS = {
+    'n_fft': NFFT,
+    'hop_length': HOPLENGTH,
+    'amin': 1e-10,
+    'power': 2.0
+}
+
+ZEROCRPARAMS = {
+    'frame_length': 2048,
+    'hop_length': 512,
+    'center': CENTER_WINDOWS,
+}
+
 # SET MIN AUDIO LENGTH ALLOWED
 MIN_STFT_LENGTH = MIN_STFT_LENGTH
 if CENTER_WINDOWS:
@@ -166,6 +202,10 @@ MIN_AUDIO_LENGHT_MS = MIN_WAVEFORM_LENGTH * 1e3 / SR
 print("~~~~~~ AUDIOVOCANA SETTINGS ~~~~~~")
 print(f"AUDIOPARAMS \n {AUDIOPARAMS}")
 print(f"STFTPARAMS \n {STFTPARAMS}")
+print(f"SPECTRALCENTROIDPARAMS \n {SPECTRALCENTROIDPARAMS}")
+print(f"SPECTRALBANDWIDTHPARAMS \n {SPECTRALBANDWIDTHPARAMS}")
+print(f"SPECTRALFLATNESSPARAMS \n {SPECTRALFLATNESSPARAMS}")
+print(f"ZEROCRPARAMS \n {ZEROCRPARAMS}")
 print(f"MELPARAMS \n {MELPARAMS}")
 print(f"MFCCPAMARS \n {MFCCPAMARS}")
 print(f"mel fiterbank shape = {MELFB.shape}")
