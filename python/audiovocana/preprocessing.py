@@ -17,8 +17,8 @@ def get_recording(experiment):
     return experiment.split('-')[-1].split('.csv')[0]
 
 
-def get_nest_number(experiment):
-    return experiment.split('N')[-1][0]
+def get_nest(experiment):
+    return experiment[4]+experiment.split('N')[-1][0]
 
 
 def get_year(experiment):
@@ -86,7 +86,7 @@ def format_dataframe(experiment, recording, df, audio_folder):
             mother=get_mother_experience(experiment),
             postnatalday=get_postnatalday(experiment),
             audio_path=get_audio_path(recording, audio_folder),
-            nest=get_nest_number(experiment),
+            nest=get_nest(experiment),
             year=get_year(experiment))
         # replace missing vocalization annotations
         df.vocalization.fillna(MISSING_VOCALIZATION_LABEL, inplace=True)
