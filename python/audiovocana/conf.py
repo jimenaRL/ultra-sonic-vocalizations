@@ -55,10 +55,6 @@ VOCALIZATIONS = {
     2: "USV"
 }
 
-COLORS = {
-    1: 'tab:blue',
-    2: 'tab:orange'
-}
 
 YEARLABELMAPPING = {
     17: {
