@@ -2,7 +2,7 @@
 Python package for audio and machine learning analysis of audible and ultra-sonic vocalizations.
 
 
-![Image description](images/cover.png)
+![Image description](images/cover2.png)
 
 
 TO DO:
