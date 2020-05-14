@@ -56,6 +56,15 @@ VOCALIZATIONS = {
 }
 
 
+POSTNATALDAYMAPPING = {
+    1: 1,
+    2: 1,
+    4: 5,
+    5: 5,
+    9: 9,
+    10: 9
+}
+
 YEARLABELMAPPING = {
     17: {
         0: 0,

@@ -9,6 +9,7 @@ from audiovocana.conf import (
     COLUMNS,
     PRECOLUMNS,
     YEARLABELMAPPING,
+    POSTNATALDAYMAPPING,
     MISSING_VOCALIZATION_LABEL
 )
 
@@ -97,6 +98,9 @@ def format_dataframe(experiment, recording, df, audio_folder):
         # manage different labeling for different years
         df = df.assign(vocalization=df.apply(
             lambda r: YEARLABELMAPPING[int(r.year)][r.vocalization], axis=1))
+        # manage fluctuaction in postntal days recordings
+        df = df.assign(postnatalday=df.apply(
+            lambda r: POSTNATALDAYMAPPING[r.postnatalday], axis=1))
 
         return df
 
