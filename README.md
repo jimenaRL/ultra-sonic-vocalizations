@@ -12,9 +12,5 @@ devops
 2. Write python package setup file
 3. Tests :/
 
-dataset
-1. Write exporting functions
-2. Write stratified sampling method
-
-stats
-1. Retrive representants audio events from clusters
+dataset / stats
+1. Write stratified sampling method
