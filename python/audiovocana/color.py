@@ -30,9 +30,16 @@ COLORS = {
 }
 
 
+def dec(l):
+    if isinstance(l, bytes):
+        return l.decode()
+    return l
+
+
 def plot_legend(colordicc, title):
     legend_elements = [
-        Patch(facecolor=c, edgecolor=c, label=l.decode() if isinstance(l, bytes) else l) for l, c in colordicc.items()]
+        Patch(facecolor=c, edgecolor=c, label=dec(l))
+        for l, c in colordicc.items()]
     fig, ax = plt.subplots(figsize=(2, 2))
     ax.legend(handles=legend_elements, loc='center')
     plt.title(title)
