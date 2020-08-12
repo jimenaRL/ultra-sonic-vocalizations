@@ -1,5 +1,5 @@
 # ultra-sonic-vocalizations
-Python package for audio and machine learning analysis of audible and ultra-sonic vocalizations.
+Python scripts package for audio and machine learning analysis of audible and ultra-sonic vocalizations.
 
 
 ![Image description](images/cover2.png)
@@ -12,9 +12,5 @@ devops
 2. Write python package setup file
 3. Tests :/
 
-dataset
-1. Write exporting functions
-2. Write stratified sampling method
-
-stats
-1. Retrive representants audio events from clusters
+dataset / stats
+1. Write stratified sampling method
