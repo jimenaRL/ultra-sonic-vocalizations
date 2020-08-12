@@ -4,7 +4,7 @@ import librosa
 import librosa.feature as lf
 
 from audiovocana.conf import (
-    AUDIOPARAMS,
+    # AUDIOPARAMS,
     STFTPARAMS,
     MELPARAMS,
     MFCCPAMARS,
