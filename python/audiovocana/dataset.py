@@ -57,13 +57,13 @@ def inverse(tensor):
 
 
 def get_dataset(
-    csv_path=None,
+    df,
     shuffle=True,
     cache_folder=None,
     recompute=False
 ):
 
-    df = get_dataframe(csv_path=csv_path, save=False)
+    # df = get_dataframe(csv_path=csv_path, save=False)
 
     # create dataset
     dataset = (
