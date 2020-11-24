@@ -13,6 +13,12 @@ from audiovocana.conf import (
     MISSING_VOCALIZATION_LABEL
 )
 
+KINDS = {
+    'dev',
+    'full',
+    'setup'
+}
+
 
 def get_recording(experiment):
     return experiment.split('-')[-1].split('.csv')[0]
@@ -45,7 +51,75 @@ def get_experiment_from_xlsx_path(path):
     return os.path.split(path)[-1].split(".xlsx")[0]
 
 
-def format_dataframe(experiment, recording, df, audio_folder):
+def format_dataframe_setup(experiment, recording, df, audio_folder):
+        # remove columns with empty strings
+        df = df.replace('', np.nan).dropna(axis=1, how='all')
+        # remove rows with NAN values
+        df = df.dropna(axis=0, how='any')
+        # remove recordings with no events
+        lf = df.shape[1]
+        lp = len(PRECOLUMNS)
+        if (lf < lp):
+            w = f"Dropping recording {recording} from experiment {experiment}:"
+            w += f" number of non-empty lines is {lf}, less than {lp}."
+            warnings.warn(w, UserWarning)
+            return None
+        elif (lf > lp):
+            w = f"Dropping last columns of recording {recording} from "
+            w += f"experiment {experiment}: number of non-empty lines is {lf},"
+            w += f" more than {lp}."
+            warnings.warn(w, UserWarning)
+            df = df.iloc[:, :14]
+        # name columns
+        df.columns = PRECOLUMNS
+        # manually convert comma to points in numeric columns encoded as string
+        # and convert to float in order to prevent later failure
+        if pd.api.types.is_string_dtype(df.dtypes.t0):
+            df = df.assign(
+                t0=pd.to_numeric(
+                    df.t0.apply(lambda s: str(s).replace(',', '.'))))
+        if pd.api.types.is_string_dtype(df.dtypes.t1):
+            df = df.assign(
+                t1=pd.to_numeric(
+                    df.t1.apply(lambda s: str(s).replace(',', '.'))))
+        # add event infos
+        df = df.assign(
+            recording=recording,
+            experiment=experiment,
+            duration=df['t1']-df['t0'])
+        # add extra info
+        df = df.assign(
+            recording=recording,
+            experiment=experiment)
+
+        #####################################################
+        # not sure if this makes sense for setup
+        #####################################################
+        df = df.assign(
+            mother=-1,  # not sure if this makes sense for setup
+            postnatalday=9,  # not sure if this makes sense for setup
+            audio_path=get_audio_path(recording, audio_folder),
+            nest=-1,
+            year=17)
+        #####################################################
+
+        # replace missing vocalization annotations
+        df.vocalization.fillna(MISSING_VOCALIZATION_LABEL, inplace=True)
+        # remove not used columns
+        df = df[list(COLUMNS.keys())]
+        # fix dtypes
+        df = df.astype(COLUMNS)
+        # manage different labeling for different years
+        df = df.assign(vocalization=df.apply(
+            lambda r: YEARLABELMAPPING[int(r.year)][r.vocalization], axis=1))
+        # manage fluctuaction in postntal days recordings
+        df = df.assign(postnatalday=df.apply(
+            lambda r: POSTNATALDAYMAPPING[r.postnatalday], axis=1))
+
+        return df
+
+
+def format_dataframe_dev_full(experiment, recording, df, audio_folder):
         # remove columns with empty strings
         df = df.replace('', np.nan).dropna(axis=1, how='all')
         # remove rows with NAN values
@@ -105,7 +179,21 @@ def format_dataframe(experiment, recording, df, audio_folder):
         return df
 
 
-def create_dataframes(path, audio_folder):
+def get_format_dataframe_fn(kind):
+
+    if kind not in KINDS:
+        raise ValueError(f"Not valid kind '{kind}', must be one of {KINDS}.")
+
+    if kind in {'dev', 'full'}:
+        return format_dataframe_dev_full
+    else:  # kind == 'setup'
+        return format_dataframe_setup
+
+
+def create_dataframes(kind, path, audio_folder):
+
+    format_dataframe = get_format_dataframe_fn(kind)
+
     dicc = pd.read_excel(
         path,
         sheet_name=None,
@@ -126,12 +214,14 @@ def create_dataframes(path, audio_folder):
 
 
 def get_dataframe(
+    kind='dev',
     xlsx_folder=None,
     audio_folder=None,
     csv_path=None,
     recompute=False,
     save=False
 ):
+
     recomputed = False
     if csv_path is not None and os.path.exists(csv_path) and not recompute:
         print(f"Reading csv from {csv_path}.")
@@ -143,7 +233,7 @@ def get_dataframe(
         xlsx_files = glob(os.path.join(xlsx_folder, "*.xlsx"))
         df = pd.concat([
             df for file in xlsx_files for df in create_dataframes(
-                file, audio_folder)])
+                kind, file, audio_folder)])
         recomputed = True
     if csv_path is not None and save and recomputed:
         df.to_csv(csv_path, index=False, header=True, encoding='utf-8')
