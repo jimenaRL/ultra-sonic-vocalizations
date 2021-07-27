@@ -6,8 +6,12 @@ import numpy as np
 import pandas as pd
 
 from audiovocana.conf import (
-    COLUMNS,
+    SEX,
     PRECOLUMNS,
+    COLUMNS,
+    COLUMNS_NEST,
+    COLUMNS_SETUP,
+    EXPERIMENTS,
     YEARLABELMAPPING,
     POSTNATALDAYMAPPING,
     MISSING_VOCALIZATION_LABEL
@@ -50,6 +54,27 @@ def get_audio_path(recording, audio_folder):
 def get_experiment_from_xlsx_path(path):
     return os.path.split(path)[-1].split(".xlsx")[0]
 
+def get_sex_from_recording(experiment):
+    for sex in ['male', 'female']:
+        if experiment in SEX[sex]:
+            return sex
+    return 'unknown'
+
+def check_info(experiment, EXPERIMENTS):
+    msg = f"Missing information for experiment '{experiment}',"
+    msg += f" must be one of {list(EXPERIMENTS.keys())}."
+    if not experiment in EXPERIMENTS:
+        raise ValueError(msg)
+
+def get_setup(experiment):
+    check_info(experiment, EXPERIMENTS)
+    return EXPERIMENTS[experiment]['setup']
+
+def detect_baseline(experiment, recording):
+    check_info(experiment, EXPERIMENTS)
+    if int(recording) <= EXPERIMENTS[experiment]['highest_baseline']:
+        return 'control'
+    return 'active'
 
 def format_dataframe_setup(experiment, recording, df, audio_folder):
         # remove columns with empty strings
@@ -92,34 +117,29 @@ def format_dataframe_setup(experiment, recording, df, audio_folder):
             recording=recording,
             experiment=experiment)
 
-        #####################################################
-        # not sure if this makes sense for setup
-        #####################################################
         df = df.assign(
-            mother=-1,  # not sure if this makes sense for setup
-            postnatalday=9,  # not sure if this makes sense for setup
             audio_path=get_audio_path(recording, audio_folder),
-            nest=-1,
-            year=17)
-        #####################################################
+            sex=get_sex_from_recording(experiment),
+            year=get_year(experiment),
+            setup=get_setup(experiment),
+            baseline=detect_baseline(experiment, recording))
+
 
         # replace missing vocalization annotations
         df.vocalization.fillna(MISSING_VOCALIZATION_LABEL, inplace=True)
         # remove not used columns
-        df = df[list(COLUMNS.keys())]
+        df = df[list(COLUMNS_SETUP.keys())]
         # fix dtypes
-        df = df.astype(COLUMNS)
+        df = df.astype(COLUMNS_SETUP)
         # manage different labeling for different years
         df = df.assign(vocalization=df.apply(
             lambda r: YEARLABELMAPPING[int(r.year)][r.vocalization], axis=1))
-        # manage fluctuaction in postntal days recordings
-        df = df.assign(postnatalday=df.apply(
-            lambda r: POSTNATALDAYMAPPING[r.postnatalday], axis=1))
 
         return df
 
 
 def format_dataframe_dev_full(experiment, recording, df, audio_folder):
+
         # remove columns with empty strings
         df = df.replace('', np.nan).dropna(axis=1, how='all')
         # remove rows with NAN values
@@ -166,9 +186,9 @@ def format_dataframe_dev_full(experiment, recording, df, audio_folder):
         # replace missing vocalization annotations
         df.vocalization.fillna(MISSING_VOCALIZATION_LABEL, inplace=True)
         # remove not used columns
-        df = df[list(COLUMNS.keys())]
+        df = df[list(COLUMNS_NEST.keys())]
         # fix dtypes
-        df = df.astype(COLUMNS)
+        df = df.astype(COLUMNS_NEST)
         # manage different labeling for different years
         df = df.assign(vocalization=df.apply(
             lambda r: YEARLABELMAPPING[int(r.year)][r.vocalization], axis=1))
@@ -231,6 +251,12 @@ def get_dataframe(
         # create individual dataframes for each recording from xlsx files
         # and concatenate them
         xlsx_files = glob(os.path.join(xlsx_folder, "*.xlsx"))
+        ########### HOT FIX 20210619 - Pantin ####################
+        for n, file in enumerate(xlsx_files):
+            f0, f1 = os.path.split(file)
+            if f1.startswith('~$'):
+                xlsx_files[n] = os.path.join(f0, f1[2:])
+        ##########################################################
         df = pd.concat([
             df for file in xlsx_files for df in create_dataframes(
                 kind, file, audio_folder)])
