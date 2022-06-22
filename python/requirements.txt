@@ -1,6 +1,6 @@
 pandas==1.0.3
 xlrd==1.2.0
-numpy==1.18.2
+numpy==1.22.0
 tensorflow==2.1.0
 librosa==0.6.2
 jupyter-client==6.1.3
