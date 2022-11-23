@@ -101,6 +101,11 @@ YEARLABELMAPPING = {
         1: 1,
         2: 2
     },
+    # 1 = wriggling call / 2 = USVs
+    21: {
+        1: 1,
+        2: 2
+    },
 }
 
 # additional information for setup experiments
@@ -133,30 +138,46 @@ EXPERIMENTS = {
     '200430': {'setup': 'cortex-buffer', 'highest_baseline': 10},
     '200501': {'setup': 'cortex-buffer', 'highest_baseline': 10},
 
-    '180410': {'setup': 'air', 'highest_baseline':137},
-    '180411': {'setup': 'air', 'highest_baseline':167},
-    '180412': {'setup': 'air', 'highest_baseline':187},
-    '180417': {'setup': 'air', 'highest_baseline':207},
-    '180418': {'setup': 'air', 'highest_baseline':225},
-    '180419': {'setup': 'air', 'highest_baseline':245},
-    '180509': {'setup': 'air', 'highest_baseline':325},
-    '180515': {'setup': 'air', 'highest_baseline':345},
-    '180516': {'setup': 'air', 'highest_baseline':365},
-    '180529': {'setup': 'air', 'highest_baseline':385},
-    '180530': {'setup': 'air', 'highest_baseline':405},
-    '180531': {'setup': 'air', 'highest_baseline':426},
+    '180410': {'setup': 'air', 'highest_baseline': 137},
+    '180411': {'setup': 'air', 'highest_baseline': 167},
+    '180412': {'setup': 'air', 'highest_baseline': 187},
+    '180417': {'setup': 'air', 'highest_baseline': 207},
+    '180418': {'setup': 'air', 'highest_baseline': 225},
+    '180419': {'setup': 'air', 'highest_baseline': 245},
+    '180509': {'setup': 'air', 'highest_baseline': 325},
+    '180515': {'setup': 'air', 'highest_baseline': 345},
+    '180516': {'setup': 'air', 'highest_baseline': 365},
+    '180529': {'setup': 'air', 'highest_baseline': 385},
+    '180530': {'setup': 'air', 'highest_baseline': 405},
+    '180531': {'setup': 'air', 'highest_baseline': 426},
 
-    '180307': {'setup': 'maternal-odor', 'highest_baseline':97},
-    '180308': {'setup': 'maternal-odor', 'highest_baseline':13},
-    '180309': {'setup': 'maternal-odor', 'highest_baseline':8},
-    '180313': {'setup': 'maternal-odor', 'highest_baseline':25},
-    '180314': {'setup': 'maternal-odor', 'highest_baseline':46},
-    '180315': {'setup': 'maternal-odor', 'highest_baseline':77},
-    '180328': {'setup': 'maternal-odor', 'highest_baseline':97},
-    '180329': {'setup': 'maternal-odor', 'highest_baseline':117},
-    '180425': {'setup': 'maternal-odor', 'highest_baseline':265},
-    '180426': {'setup': 'maternal-odor', 'highest_baseline':285},
-    '180508': {'setup': 'maternal-odor', 'highest_baseline':305}
+    '210629': {'setup': 'air', 'highest_baseline': 11},
+    '210630': {'setup': 'air', 'highest_baseline': 11},
+    '210701': {'setup': 'air', 'highest_baseline': 10},
+    '210714': {'setup': 'air', 'highest_baseline': 10},
+    '210715': {'setup': 'air', 'highest_baseline': 11},
+    '210803': {'setup': 'air', 'highest_baseline': 10},
+    '210803a': {'setup': 'air', 'highest_baseline': 11},
+
+    '180307': {'setup': 'maternal-odor', 'highest_baseline': 97},
+    '180308': {'setup': 'maternal-odor', 'highest_baseline': 13},
+    '180309': {'setup': 'maternal-odor', 'highest_baseline': 8},
+    '180313': {'setup': 'maternal-odor', 'highest_baseline': 25},
+    '180314': {'setup': 'maternal-odor', 'highest_baseline': 46},
+    '180315': {'setup': 'maternal-odor', 'highest_baseline': 77},
+    '180328': {'setup': 'maternal-odor', 'highest_baseline': 97},
+    '180329': {'setup': 'maternal-odor', 'highest_baseline': 117},
+    '180425': {'setup': 'maternal-odor', 'highest_baseline': 265},
+    '180426': {'setup': 'maternal-odor', 'highest_baseline': 285},
+    '180508': {'setup': 'maternal-odor', 'highest_baseline': 305},
+    '210720': {'setup': 'maternal-odor', 'highest_baseline': 10},
+    '210721': {'setup': 'maternal-odor', 'highest_baseline': 11},
+    '210722': {'setup': 'maternal-odor', 'highest_baseline': 11},
+    '210804': {'setup': 'maternal-odor', 'highest_baseline': 10},
+    '210805': {'setup': 'maternal-odor', 'highest_baseline': 10},
+    '210810': {'setup': 'maternal-odor', 'highest_baseline': 11},
+    '210811': {'setup': 'maternal-odor', 'highest_baseline': 10},
+    '210812': {'setup': 'maternal-odor', 'highest_baseline': 13}
 }
 
 # AUDIO PARAMS
