@@ -25,22 +25,41 @@ COLORS = {
     },
     'year': {
         17: "purple",
-        19: 'green'
+        18: 'blue',
+        19: 'green',
+        20: 'yellow',
+        21: 'red'
+    },
+    'setup': {
+        'air':  # yellow
+            (0.86, 0.7612000000000001, 0.33999999999999997),
+        'maternal-odor':  # green
+            (0.33999999999999997, 0.86, 0.5012000000000001),
+        'cortex-buffer':  # cyan
+            (0.33999999999999997, 0.8287999999999999, 0.86),
+        'OTR-antago':  # pink
+            (0.86, 0.33999999999999997, 0.6987999999999996)
+    },
+    'baseline': {
+        'control':  # rose
+            (0.9677975592919913, 0.44127456009157356, 0.5358103155058701),
+        'active':  # purple
+            (0.6423044349219739, 0.5497680051256467, 0.9582651433656727)
     }
 }
 
 
-def dec(l):
-    if isinstance(l, bytes):
-        return l.decode()
-    return l
+def dec(lll):
+    if isinstance(lll, bytes):
+        return lll.decode()
+    return lll
 
 
 def plot_legend(colordicc, title):
     legend_elements = [
-        Patch(facecolor=c, edgecolor=c, label=dec(l))
-        for l, c in colordicc.items()]
-    fig, ax = plt.subplots(figsize=(2, 2))
+        Patch(facecolor=c, edgecolor=c, label=dec(lll))
+        for lll, c in colordicc.items()]
+    _, ax = plt.subplots(figsize=(2, 2))
     ax.legend(handles=legend_elements, loc='center')
     plt.title(title)
     plt.axis('off')
@@ -53,4 +72,7 @@ if SHOW:
     plot_legend(COLORS['postnatalday'], 'POSTNATAL DAY')
     plot_legend(COLORS['mother'], 'MOTHER')
     plot_legend(COLORS['vocalization'], 'VOCALIZATION')
+    plot_legend(COLORS['setup'], 'SETUP')
+    plot_legend(COLORS['baseline'], 'BASELINE')
+    plot_legend(COLORS['year'], 'YEAR')
     plt.show()
