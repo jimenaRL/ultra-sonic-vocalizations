@@ -79,22 +79,22 @@ def detect_baseline(experiment, recording):
 def format_dataframe_setup(experiment, recording, df, audio_folder):
         # remove columns with empty strings
         df = df.replace('', np.nan).dropna(axis=1, how='all')
-        # remove rows with NAN values
-        df = df.dropna(axis=0, how='any')
         # remove recordings with no events
         lf = df.shape[1]
         lp = len(PRECOLUMNS)
         if (lf < lp):
             w = f"Dropping recording {recording} from experiment {experiment}:"
-            w += f" number of non-empty lines is {lf}, less than {lp}."
+            w += f" number of non-empty columns is {lf}, less than {lp}."
             warnings.warn(w, UserWarning)
             return None
         elif (lf > lp):
-            w = f"Dropping last columns of recording {recording} from "
-            w += f"experiment {experiment}: number of non-empty lines is {lf},"
+            w = f"Dropping excedent columns of recording {recording} from "
+            w += f"experiment {experiment}: number of non-empty columns is {lf},"
             w += f" more than {lp}."
             warnings.warn(w, UserWarning)
             df = df.iloc[:, :14]
+        # remove rows with NAN values
+        df = df.dropna(axis=0, how='any')
         # name columns
         df.columns = PRECOLUMNS
         # manually convert comma to points in numeric columns encoded as string
@@ -252,10 +252,12 @@ def get_dataframe(
         # and concatenate them
         xlsx_files = glob(os.path.join(xlsx_folder, "*.xlsx"))
         ########### HOT FIX 20210619 - Pantin ####################
+        ########### FIX HOT FIX 20221221 - Pantin ####################
         for n, file in enumerate(xlsx_files):
-            f0, f1 = os.path.split(file)
+            f1 = os.path.split(file)[1]
             if f1.startswith('~$'):
-                xlsx_files[n] = os.path.join(f0, f1[2:])
+                del xlsx_files[n]
+        xlsx_files = list(set(xlsx_files))
         ##########################################################
         df = pd.concat([
             df for file in xlsx_files for df in create_dataframes(
