@@ -12,8 +12,11 @@ from audiovocana.conf import (
     SPECTRALFLATNESSPARAMS,
     SPECTRALCENTROIDPARAMS,
     SPECTRALBANDWIDTHPARAMS,
-    MIN_STFT_LENGTH
+    MIN_STFT_LENGTH,
+    F0PARAMS
 )
+
+from audiovocana.f0 import f0_estimation_from_spect
 
 import audiovocana.ffmpeg_utils.ffmpeg_utils as ffmpeg
 
@@ -101,6 +104,15 @@ def compute_mfcc(melspectrogram):
         return np.array([-1.0, -1.0]), True
 
 
+def compute_f0(spectrogram):
+    try:
+        return f0_estimation_from_spect(
+            S=spectrogram, **F0PARAMS), False
+    except Exception as e:
+        print(f"compute_f0 error: {e}")
+        return np.array([-1.0, -1.0, -1.0, -1.0, -1.0]), True
+
+
 def load_audio_tf(sample):
     res = tf.py_function(
         func=load_audio,
@@ -167,3 +179,19 @@ def compute_mfcc_tf(sample):
         inp=[sample['mel']],
         Tout=(tf.float32, tf.bool))
     return dict(list(sample.items()) + [("mfcc", res[0]), ("error", res[1])])
+
+
+def compute_f0_tf(sample):
+    res = tf.py_function(
+        func=compute_f0,
+        inp=[sample['stft']],
+        Tout=(tf.float32, tf.bool))
+    new_items = [
+        ("min_f0", res[0][0]),
+        ("max_f0", res[0][1]),
+        ("mean_f0", res[0][2]),
+        ("mnddy", res[0][3]),
+        ("mean_rms", res[0][4]),
+        ("error", res[1])
+    ]
+    return dict(list(sample.items()) + new_items)
