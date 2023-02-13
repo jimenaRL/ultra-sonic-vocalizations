@@ -11,6 +11,7 @@ from audiovocana.conf import (
     MIN_WAVEFORM_LENGTH,
     SEED
 )
+
 from audiovocana.audio_features import (
     load_audio_tf,
     compute_stft_tf,
@@ -19,7 +20,8 @@ from audiovocana.audio_features import (
     compute_spectral_centroid_tf,
     compute_spectral_bandwidth_tf,
     compute_spectral_flatness_tf,
-    compute_zero_crossing_rate_tf
+    compute_zero_crossing_rate_tf,
+    compute_f0_tf
 )
 
 
@@ -87,10 +89,12 @@ def get_dataset(
     # compute audio features
     dataset = dataset.map(compute_melspectrogram_tf)
     dataset = dataset.map(compute_mfcc_tf)
-    dataset = dataset.map(compute_spectral_centroid_tf)
-    dataset = dataset.map(compute_spectral_bandwidth_tf)
-    dataset = dataset.map(compute_spectral_flatness_tf)
-    dataset = dataset.map(compute_zero_crossing_rate_tf)
+    # dataset = dataset.map(compute_spectral_centroid_tf)
+    # dataset = dataset.map(compute_spectral_bandwidth_tf)
+    # dataset = dataset.map(compute_spectral_flatness_tf)
+    # dataset = dataset.map(compute_zero_crossing_rate_tf)
+
+    dataset = dataset.map(compute_f0_tf)
 
     # map dynamic compression
     C = 1000
@@ -103,41 +107,41 @@ def get_dataset(
     dataset = dataset.map(
         lambda sample: dict(
             sample, mean_stft=reduce_time_mean((sample['stft']))))
-    dataset = dataset.map(
-        lambda sample: dict(
-            sample, mean_mel=reduce_time_mean((sample['mel']))))
+    # dataset = dataset.map(
+    #     lambda sample: dict(
+    #         sample, mean_mel=reduce_time_mean((sample['mel']))))
     dataset = dataset.map(
         lambda sample: dict(
             sample, mean_mfcc=reduce_time_mean((sample['mfcc']))))
-    dataset = dataset.map(
-        lambda sample: dict(
-            sample, mean_zrc=reduce_time_mean((sample['zcr']), axis=0)))
-    dataset = dataset.map(
-        lambda sample: dict(
-            sample, mean_sbw=reduce_time_mean((sample['sbw']), axis=0)))
-    dataset = dataset.map(
-        lambda sample: dict(
-            sample, mean_sf=reduce_time_mean((sample['sf']), axis=0)))
-    dataset = dataset.map(
-        lambda sample: dict(
-            sample, mean_sc=reduce_time_mean((sample['sc']), axis=0)))
+    # dataset = dataset.map(
+    #     lambda sample: dict(
+    #         sample, mean_zrc=reduce_time_mean((sample['zcr']), axis=0)))
+    # dataset = dataset.map(
+    #     lambda sample: dict(
+    #         sample, mean_sbw=reduce_time_mean((sample['sbw']), axis=0)))
+    # dataset = dataset.map(
+    #     lambda sample: dict(
+    #         sample, mean_sf=reduce_time_mean((sample['sf']), axis=0)))
+    # dataset = dataset.map(
+    #     lambda sample: dict(
+    #         sample, mean_sc=reduce_time_mean((sample['sc']), axis=0)))
+
+    # dataset = dataset.map(
+    #     lambda sample: dict(sample, inv_stft=inverse((sample['stft']))))
+    # dataset = dataset.map(
+    #     lambda sample: dict(sample, inv_mel=inverse((sample['mel']))))
+    # dataset = dataset.map(
+    #     lambda sample: dict(sample, inv_mfcc=inverse((sample['mfcc']))))
 
     dataset = dataset.map(
-        lambda sample: dict(sample, inv_stft=inverse((sample['stft']))))
-    dataset = dataset.map(
-        lambda sample: dict(sample, inv_mel=inverse((sample['mel']))))
-    dataset = dataset.map(
-        lambda sample: dict(sample, inv_mfcc=inverse((sample['mfcc']))))
-
+        lambda sample: dict(
+            sample, max_stft=reduce_time_max(inverse(sample['stft']))))
     dataset = dataset.map(
         lambda sample: dict(
-            sample, max_stft=reduce_time_max((sample['inv_stft']))))
+            sample, max_mel=reduce_time_max(inverse(sample['mel']))))
     dataset = dataset.map(
         lambda sample: dict(
-            sample, max_mel=reduce_time_max((sample['inv_mel']))))
-    dataset = dataset.map(
-        lambda sample: dict(
-            sample, max_mfcc=reduce_time_max((sample['inv_mfcc']))))
+            sample, max_mfcc=reduce_time_max(inverse(sample['mfcc']))))
 
     # shuffle
     if shuffle:
