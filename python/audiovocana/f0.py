@@ -131,18 +131,19 @@ def f0_estimation_from_spect(
     x2 = x1[2:][outliers]
     S2 = S1[:, 2:][:, outliers]
 
+    # take only central part as borders are noisy
+    t = ignore_border
+    k = len(f0_tonality_outliers)
+    start = int(t * k)
+    stop = int((1 - t) * k)
+    mean_f0 = int(np.mean(f0_tonality_outliers[start:stop]))
+    max_f0 = int(np.max(f0_tonality_outliers[start:stop]))
+    min_f0 = int(np.min(f0_tonality_outliers[start:stop]))
+
     # (4) contour smoothing by spline interpolation
     tck = sp.interpolate.splrep(
         x2, f0_tonality_outliers / FMAX, k=3, s=smoothness)
     f0_smooth = FMAX * sp.interpolate.splev(x, tck, der=0)
-    # take only central part as borders are noisy
-    t = ignore_border
-    k = len(f0_smooth)
-    start = int(t * k)
-    stop = int((1 - t) * k)
-    mean_f0 = int(np.mean(f0_smooth[start:stop]))
-    max_f0 = int(np.max(f0_smooth[start:stop]))
-    min_f0 = int(np.min(f0_smooth[start:stop]))
 
     # (5) compute mean normalize 2nd derivative from normalized contou
     ddy = sp.interpolate.splev(x, tck, der=2)
