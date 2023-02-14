@@ -60,12 +60,12 @@ def hcluster(
     figsize=(12, 12)):
 
     if scale == 'standard':
-        standard_scale = 1
+        standard_scale = 0
         z_score = None
         print('Using max-0 scaling')
     elif scale == 'whitening':
         standard_scale = None
-        z_score = 1
+        z_score = 0
         print('Using whitening scaling')
     else:
         raise ValueError
