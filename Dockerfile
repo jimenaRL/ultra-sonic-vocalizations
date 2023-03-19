@@ -58,19 +58,18 @@ ENV FFPROBE_BINARY /usr/bin/ffprobe
 ARG token
 ENV env_token $token
 
-
 RUN git clone https://${env_token}@github.com/jimenaRL/ultra-sonic-vocalizations.git
+WORKDIR /usv/ultra-sonic-vocalizations
+RUN git checkout docker --
+RUN pip install -r python/requirements.txt
+ENV PYTHONPATH /usv/ultra-sonic-vocalizations/python
 
-# RUN pip install -r ultra-sonic-vocalizations/python/requirements.txt
+WORKDIR /usv
+RUN git clone https://${env_token}@github.com/jimenaRL/usv-experiments.git
 
-
-# RUN git clone https://${env_token}@github.com/jimenaRL/usv-experiments.git
-
-# WORKDIR /usv/usv-experiments
-
-# RUN git checkout abril2022
-
-# WORKDIR /usv/usv-experiments/setup-complexUSV-20230318
+WORKDIR /usv/usv-experiments
+RUN git checkout abril2022
+WORKDIR /usv/usv-experiments/setup-complexUSV-20230318
 
 
 
