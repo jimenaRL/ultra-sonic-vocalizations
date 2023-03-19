@@ -51,8 +51,8 @@ RUN apt-get update && \
 
 WORKDIR /usv
 
-ENV FFMPEG_BINARY /usr/bin/ffmpeg
 ENV FFPROBE_BINARY /usr/bin/ffprobe
+ENV FFMPEG_BINARY /usr/bin/ffmpeg
 
 # clone project repo and install dependencies
 ARG token
