@@ -58,6 +58,8 @@ ENV FFMPEG_BINARY /usr/bin/ffmpeg
 ARG token
 ENV env_token $token
 
+RUN apt-get install libsndfile1-dev
+
 RUN git clone https://${env_token}@github.com/jimenaRL/ultra-sonic-vocalizations.git
 WORKDIR /usv/ultra-sonic-vocalizations
 RUN git checkout docker --
