@@ -59,10 +59,10 @@ STFTPARAMS = {
 }
 
 
-# FFTFREQS = librosa.core.fft_frequencies(
-#     sr=AUDIOPARAMS['sr'],
-#     n_fft=STFTPARAMS['n_fft']
-# )
+FFTFREQS = librosa.core.fft_frequencies(
+    sr=AUDIOPARAMS['sr'],
+    n_fft=STFTPARAMS['n_fft']
+)
 
 
 # MEL FILTERBANK PARAMS
@@ -87,12 +87,12 @@ MFCCPAMARS = {
     'htk': HTK
 }
 
-# MELFREQS = librosa.core.mel_frequencies(
-#     n_mels=NMELS,
-#     fmin=FMIN,
-#     fmax=FMAX,
-#     htk=HTK)
-# MELFB = librosa.filters.mel(**MELPARAMS)
+MELFREQS = librosa.core.mel_frequencies(
+    n_mels=NMELS,
+    fmin=FMIN,
+    fmax=FMAX,
+    htk=HTK)
+MELFB = librosa.filters.mel(**MELPARAMS)
 
 
 # OTHERS PARAMS
