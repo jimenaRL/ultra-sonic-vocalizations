@@ -3,7 +3,7 @@ import numpy as np
 import librosa
 import librosa.feature as lf
 
-from audiovocana.audio_conf import (
+from audiovocana.conf import (
     # AUDIOPARAMS,
     STFTPARAMS,
     MELPARAMS,
