@@ -34,6 +34,8 @@ RUN apt-get update && apt-get install -y ffmpeg
 # -----------------------------------------------------------------------------
 FROM ubuntu:20.04
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 COPY --from=pyenv /root/.pyenv /root/.pyenv
 ENV PYENV_ROOT /root/.pyenv
 ENV PATH $PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
@@ -43,13 +45,14 @@ RUN python -m pip install --upgrade pip
 COPY --from=audiotools /usr/bin/ffmpeg /usr/bin/ffmpeg
 COPY --from=audiotools /usr/bin/ffprobe /usr/bin/ffprobe
 
+RUN apt-get update && apt-get install -y libsndfile1-dev
+
 # install git & nano
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y git && \
     apt-get install -y nano
 
-WORKDIR /usv
 
 ENV FFPROBE_BINARY /usr/bin/ffprobe
 ENV FFMPEG_BINARY /usr/bin/ffmpeg
@@ -58,8 +61,7 @@ ENV FFMPEG_BINARY /usr/bin/ffmpeg
 ARG token
 ENV env_token $token
 
-RUN apt-get install libsndfile1-dev
-
+WORKDIR /usv
 RUN git clone https://${env_token}@github.com/jimenaRL/ultra-sonic-vocalizations.git
 WORKDIR /usv/ultra-sonic-vocalizations
 RUN git checkout docker --
@@ -67,11 +69,14 @@ RUN pip install -r python/requirements.txt
 ENV PYTHONPATH /usv/ultra-sonic-vocalizations/python
 
 WORKDIR /usv
+RUN pwd
 RUN git clone https://${env_token}@github.com/jimenaRL/usv-experiments.git
 
 WORKDIR /usv/usv-experiments
 RUN git checkout abril2022
 WORKDIR /usv/usv-experiments/setup-complexUSV-20230318
+RUN pip install -r requirements.txt
 
-
-
+RUN ls
+COPY ./docker-entrypoint.sh /
+ENTRYPOINT ["/docker-entrypoint.sh"]
