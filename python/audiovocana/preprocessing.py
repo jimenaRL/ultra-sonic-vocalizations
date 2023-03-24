@@ -79,6 +79,7 @@ def detect_baseline(experiment, recording):
 def format_dataframe_setup(experiment, recording, df, audio_folder):
         # remove columns with empty strings
         df = df.replace('', np.nan).dropna(axis=1, how='all')
+        # import ipdb; ipdb.set_trace()
         # remove recordings with no events
         lf = df.shape[1]
         lp = len(PRECOLUMNS)
@@ -93,9 +94,15 @@ def format_dataframe_setup(experiment, recording, df, audio_folder):
             w += f" more than {lp}."
             warnings.warn(w, UserWarning)
             df = df.iloc[:, :14]
+        # import ipdb; ipdb.set_trace()
         # remove rows with NAN values
-        df = df.dropna(axis=0, how='any')
-        # name columns
+        all_nan_rows = df[df.isna().all(axis=1)]
+        if len(all_nan_rows) > 0:
+            # import ipdb; ipdb.set_trace()
+            print(f"Dropping rows with all NAN values:\n{all_nan_rows}")
+            df = df.drop(index=all_nan_rows.index)
+        # import ipdb; ipdb.set_trace()
+	# name columns
         df.columns = PRECOLUMNS
         # manually convert comma to points in numeric columns encoded as string
         # and convert to float in order to prevent later failure
