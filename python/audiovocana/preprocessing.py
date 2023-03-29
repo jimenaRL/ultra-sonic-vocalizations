@@ -108,9 +108,9 @@ def format_dataframe_setup(experiment, recording, df, audio_folder):
         df.columns = PRECOLUMNS
         # frop first row if is not possible to convert t0 value to float
         try:
-            float(df.t0.loc[0])
+            float(df.t0.tolist()[0])
         except:
-             print(f"Dropping first row with not numerical value for t0: '{df.iloc[0].t0}'")
+             print(f"Recording {recording}: dropping first row with not numerical value for t0: '{df.t0.tolist()[0]}'")
              df = df.iloc[1:]
         # manually convert comma to points in numeric columns encoded as string
         # and convert to float in order to prevent later failure
@@ -152,8 +152,10 @@ def format_dataframe_setup(experiment, recording, df, audio_folder):
 
         # check durations
         nb_too_small_events = ((df.t1 - df.t0) < 0.432 / 1000).sum()
+        too_small_events = df[(df.t1 - df.t0) < 0.432 / 1000]
         if nb_too_small_events > 0:
-            print(f"Found {nb_too_small_events} events shorter that 0.432 ms.")
+            print(f"Recording {recording}: found {nb_too_small_events} events shorter that 0.432 ms.")
+            print(too_small_events)
 
         return df
 
