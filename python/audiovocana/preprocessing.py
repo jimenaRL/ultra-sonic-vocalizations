@@ -78,7 +78,11 @@ def detect_baseline(experiment, recording):
 
 def format_dataframe_setup(experiment, recording, df, audio_folder):
         # remove columns with empty strings
+        n0 = len(df)
         df = df.replace('', np.nan).dropna(axis=1, how='all')
+        n1 = len(df)
+        if n1 < n0:
+           print(f"Dropping {n1 - n0} columns with all empty values.")
         # import ipdb; ipdb.set_trace()
         # remove recordings with no events
         lf = df.shape[1]
@@ -94,16 +98,20 @@ def format_dataframe_setup(experiment, recording, df, audio_folder):
             w += f" more than {lp}."
             warnings.warn(w, UserWarning)
             df = df.iloc[:, :14]
-        # import ipdb; ipdb.set_trace()
         # remove rows with NAN values
         all_nan_rows = df[df.isna().all(axis=1)]
         if len(all_nan_rows) > 0:
             # import ipdb; ipdb.set_trace()
             print(f"Dropping rows with all NAN values:\n{all_nan_rows}")
             df = df.drop(index=all_nan_rows.index)
-        # import ipdb; ipdb.set_trace()
 	# name columns
         df.columns = PRECOLUMNS
+        # frop first row if is not possible to convert t0 value to float
+        try:
+            float(df.t0.loc[0])
+        except:
+             print(f"Dropping first row with not numerical value for t0: '{df.iloc[0].t0}'")
+             df = df.iloc[1:]
         # manually convert comma to points in numeric columns encoded as string
         # and convert to float in order to prevent later failure
         if pd.api.types.is_string_dtype(df.dtypes.t0):
@@ -141,6 +149,11 @@ def format_dataframe_setup(experiment, recording, df, audio_folder):
         # manage different labeling for different years
         df = df.assign(vocalization=df.apply(
             lambda r: YEARLABELMAPPING[int(r.year)][r.vocalization], axis=1))
+
+        # check durations
+        nb_too_small_events = ((df.t1 - df.t0) < 0.432 / 1000).sum()
+        if nb_too_small_events > 0:
+            print(f"Found {nb_too_small_events} events shorter that 0.432 ms.")
 
         return df
 
@@ -224,7 +237,7 @@ def create_dataframes(kind, path, audio_folder):
     dicc = pd.read_excel(
         path,
         sheet_name=None,
-        header=0,
+        header=None,
         na_values=0,
         keep_default_na=False)
     dfs = []
