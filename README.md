@@ -1,5 +1,5 @@
 # ultra-sonic-vocalizations
-Python scripts package for audio and machine learning analysis of audible and ultra-sonic vocalizations.
+Python package for audio and machine learning analysis of audible and ultra-sonic vocalizations.
 
 
 ![Image description](images/cover2.png)
@@ -8,8 +8,7 @@ Python scripts package for audio and machine learning analysis of audible and ul
 TO DO:
 
 devops
-1. Add conda ffmpeg+ffprobe installation in docker image
-2. Write python package setup file
+1. Write python package setup file
 3. Tests :/
 
 dataset / stats
